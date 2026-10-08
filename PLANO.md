@@ -324,7 +324,7 @@ treinador-carisma/
 | R12 | Assinatura (Claude/Codex/Gemini) usada fora do uso pessoal | só na Edição Local, com a CLI logada pelo **próprio** usuário no **próprio** PC; nunca na Nuvem servindo outras pessoas com uma assinatura; conferir os termos de cada provedor antes de publicar |
 | R13 | CLI lenta para voz (alguns segundos para iniciar) | processo persistente com streaming (sessão aberta), avaliador fora do caminho crítico; para voz instantânea, Ollama ou realtime |
 | R14 | Modelo local sem raciocínio troca de lado e fala como o usuário (qwen3:30b: ~2 em 8 na cena feedback-atraso, mesmo com o prompt corrigido) | contexto marcado como texto do usuário e falas do personagem como "VOCÊ (Nome)"; para cenas difíceis, motor maior ou assinatura; medir de novo a cada troca de modelo |
-| R15 | Eco da própria voz dispara o microfone no mãos-livres | cancelamento de eco do navegador + limiar 2,2× enquanto o personagem fala; na Nuvem o microfone pausa durante a fala; com caixa de som alta, usar fone |
+| R15 | Eco da própria voz dispara o microfone no mãos-livres | cancelamento de eco do navegador + limiar 2,2× enquanto o personagem fala; na Nuvem o microfone pausa durante a fala; com caixa de som alta, usar fone. **Ainda não testado com caixa de som real** (o teste usa microfone falso, sem eco), nem o mãos-livres da Nuvem num navegador de verdade |
 | R16 | Whisper "inventa" frases em silêncio ou ruído | trecho quase mudo vira texto vazio; segmentos com `no_speech_prob` alto descartados; frases típicas ("Obrigado.", "Legendas pela comunidade…") filtradas |
 
 **Regra de desenvolvimento:** nenhuma chamada a API paga (LLM, realtime, avatar) durante construção e testes sem autorização explícita. Os testes usam o adaptador `fake` e o Ollama.

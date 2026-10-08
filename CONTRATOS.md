@@ -65,7 +65,7 @@ Resposta: `text/plain; charset=utf-8` em streaming (chunks de texto). Erro: HTTP
 `{"texto":"...","voz":"kokoro:pf_dora","velocidade":1.0}` → `audio/wav`. `voz` = `engine:voz` ou só o nome de uma voz do Piper (compatível com a 1.0). `velocidade` de 0,5 a 2 (422 fora disso).
 - `kokoro:<voz>` — Kokoro-82M (Apache 2.0), vozes `pf_dora` (feminina), `pm_alex`, `pm_santa` (masculinas); GPU quando houver.
 - `piper:<voz>` — Piper carregado na memória (módulo `piper-tts`) ou o binário `piper`; modelo em `~/.local/share/piper/<voz>.onnx` (env `TC_PIPER_DIR`).
-- `chatterbox:<id>` — opcional: processo persistente no Python do chatterbox (`TC_CHATTERBOX_PY`) com o WAV de referência do próprio usuário em `~/.local/share/treinador-carisma/vozes/<id>.wav` (env `TC_VOZES_DIR`; `<id>` = id do treinador, ex. `executiva`). Nenhuma voz de referência vem no projeto.
+- `chatterbox:<id>` — opcional: processo persistente no Python do chatterbox (`TC_CHATTERBOX_PY`) com o WAV de referência do próprio usuário em `~/.local/share/treinador-carisma/vozes/<id>.wav` (env `TC_VOZES_DIR`; `<id>` = id do treinador, ex. `executiva`). Nenhuma voz de referência vem no projeto. Medido: 1ª frase ~15 s (carrega o modelo; o gateway espera até 600 s), depois ~2,7 s por frase.
 - 400 para engine/voz inválida; 503 se indisponível (o front cai para `speechSynthesis`).
 - `TC_AQUECER=1` carrega o STT e as vozes na subida do gateway (a 1ª fala não paga o carregamento).
 

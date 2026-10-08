@@ -30,6 +30,7 @@ AQUI = Path(__file__).resolve().parent
 TIMEOUT_CLI = 120.0
 TIMEOUT_TTS = 60.0
 TIMEOUT_CHATTERBOX = 90.0
+TIMEOUT_CHATTERBOX_CARGA = 600.0
 CACHE_HEALTH_S = 30.0
 MOTORES = ("ollama", "codex", "claude", "gemini")
 
@@ -574,6 +575,7 @@ class Chatterbox:
 
     def __init__(self):
         self.proc = None
+        self.pronto = False  # a 1ª frase inclui carregar o modelo: espera mais
 
     async def garantir(self):
         if self.proc and self.proc.returncode is None:
@@ -581,6 +583,7 @@ class Chatterbox:
         py = chatterbox_py()
         if not py:
             raise GatewayErro(503, "chatterbox desligado (defina TC_CHATTERBOX_PY)")
+        self.pronto = False
         self.proc = await asyncio.create_subprocess_exec(
             py, str(AQUI / "chatterbox_worker.py"),
             stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
@@ -593,13 +596,15 @@ class Chatterbox:
         self.proc.stdin.write(pedido.encode("utf-8"))
         await self.proc.stdin.drain()
         try:
-            linha = await asyncio.wait_for(self.proc.stdout.readline(), TIMEOUT_CHATTERBOX)
+            teto = TIMEOUT_CHATTERBOX if self.pronto else TIMEOUT_CHATTERBOX_CARGA
+            linha = await asyncio.wait_for(self.proc.stdout.readline(), teto)
         except asyncio.TimeoutError:
             self.proc.kill()
             raise GatewayErro(504, "chatterbox: tempo esgotado")
         if not linha:
             raise GatewayErro(502, "chatterbox encerrou")
         r = json.loads(linha)
+        self.pronto = True
         if not r.get("ok"):
             raise GatewayErro(502, f"chatterbox: {r.get('erro', 'falhou')}")
 

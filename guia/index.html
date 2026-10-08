@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Treinador de Carisma — ensaie conversas com IA</title>
+<meta name="description" content="Treinador de Carisma: converse com um treinador de IA, ensaie cenas reais e receba uma correção por vez. Modos Carisma e Conquista. Roda no navegador ou no seu PC (Ollama ou assinatura Codex/Claude/Gemini). Código aberto MIT.">
+<link rel="alternate" hreflang="pt-BR" href="https://inematds.github.io/treinador-carisma/guia/">
+<link rel="alternate" hreflang="en" href="https://inematds.github.io/treinador-carisma/guia/en/">
+<link rel="alternate" hreflang="es" href="https://inematds.github.io/treinador-carisma/guia/es/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0c10; --bg2:#14141b; --card:#16161e; --line:#272730;
+    --txt:#e9e9ee; --mut:#9a9aa6; --amb:#E2A23B; --amb2:#f0c070; --sky:#38bdf8; --pro:#cbd5e1;
+    color-scheme:dark;
+  }
+  body.light{
+    --bg:#f6f7f9; --bg2:#eceef2; --card:#ffffff; --line:#e1e3ea;
+    --txt:#1a1a22; --mut:#5b5b68; --amb:#b9791d; --amb2:#a16207; --sky:#0369a1; --pro:#b45309;
+    color-scheme:light;
+  }
+  body.light .hero .glow{opacity:.5}
+  body.light pre{background:#0e0e14;color:#d6d6e0}
+  body.light pre .c{color:#8a8a98}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:Sora,sans-serif;line-height:1.15;margin:0}
+  a{color:var(--amb);text-decoration:none}
+  code,pre{font-family:"JetBrains Mono",monospace}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 22px}
+  .mut{color:var(--mut)} .amb{color:var(--amb)}
+  .chip{display:inline-block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amb);font-weight:600;font-family:Sora}
+  nav{position:sticky;top:0;z-index:30;backdrop-filter:blur(12px);background:rgba(12,12,16,.78);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:22px;height:60px}
+  nav .brand{display:flex;align-items:center;gap:8px;font-family:Sora;font-weight:800;letter-spacing:-.02em;color:var(--amb)}
+  nav .brand .emoji{font-size:1.25rem}
+  nav .sep{color:var(--mut);opacity:.45}
+  nav .inema{color:var(--sky);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .inema:hover{filter:brightness(1.15)}
+  nav .pro{color:var(--pro);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .pro:hover{filter:brightness(1.15)}
+  nav .clubpro{display:inline-flex;align-items:center;gap:6px}
+  nav .links{margin-left:auto;display:flex;align-items:center;gap:20px;font-size:.92rem}
+  nav .links a.sec{color:var(--mut)} nav .links a.sec:hover{color:var(--txt)}
+  .lang{display:inline-flex;gap:2px;font-family:Sora;font-size:.78rem}
+  .lang a{color:var(--mut);padding:.2em .45em;border-radius:6px} .lang a.on{color:var(--amb);background:rgba(226,162,59,.12)}
+  .tgl{background:var(--bg2);border:1px solid var(--line);color:var(--txt);width:38px;height:38px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem}
+  .tgl:hover{border-color:var(--amb)}
+  .btn{display:inline-block;background:var(--amb);color:#1a1206;font-weight:600;padding:.6em 1.05em;border-radius:10px;font-family:Sora}
+  .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+  @media(max-width:760px){nav .links a.sec{display:none}}
+  @media(max-width:520px){nav .wrap{gap:8px;padding:8px 14px;height:auto;flex-wrap:wrap} nav .links{gap:8px;margin-left:0;width:100%;justify-content:space-between} nav .btn{padding:.45em .7em;font-size:.82rem} .tgl{width:34px;height:34px}}
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  .hero .glow{position:absolute;inset:-40% -20% auto auto;width:70%;height:600px;background:radial-gradient(closest-side,rgba(226,162,59,.22),transparent 70%);pointer-events:none}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:74px 22px}
+  .hero h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.025em}
+  .hero p.lead{font-size:1.18rem;color:var(--mut);margin:1.1em 0 1.6em;max-width:34ch}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -30px #000}
+  .hero figure img{width:100%;display:block}
+  .resumo{padding:38px 0 34px;border-bottom:1px solid var(--line)}
+  .resumo p{font-size:1.12rem;line-height:1.7;max-width:74ch;margin:.55em 0 0}
+  @media(max-width:780px){.hero .wrap{grid-template-columns:1fr;padding:48px 22px}}
+  section{padding:62px 0;border-bottom:1px solid var(--line)}
+  section h2{font-size:clamp(1.5rem,3.4vw,2.1rem);font-weight:800;letter-spacing:-.02em}
+  section .sub{color:var(--mut);margin:.6em 0 2em;max-width:62ch}
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.g3,.g4{grid-template-columns:1fr 1fr}}
+  @media(max-width:540px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .card h3{font-size:1.05rem;margin-bottom:.4em}
+  .card p{color:var(--mut);font-size:.92rem;margin:0}
+  .num{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:8px;background:rgba(226,162,59,.14);color:var(--amb);font-family:Sora;font-weight:800;font-size:.9rem;margin-bottom:.7em}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+  .flow span{background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:.45em .9em;font-size:.85rem;font-family:Sora;font-weight:600}
+  .flow .arr{color:var(--amb);border:none;background:none;padding:0 .1em}
+  pre{background:#0a0a0e;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow:auto;font-size:.86rem;line-height:1.6;color:#d6d6e0}
+  pre .c{color:#6f6f7c} pre .k{color:var(--amb2)} pre .s{color:#9ece6a}
+  .step{display:grid;grid-template-columns:46px minmax(0,1fr);gap:16px;margin-bottom:26px}
+  .step>div,.card{min-width:0}
+  p code,li code,td code{overflow-wrap:anywhere}
+  .step .b{width:46px;height:46px;border-radius:12px;background:var(--amb);color:#1a1206;font-family:Sora;font-weight:800;font-size:1.25rem;display:flex;align-items:center;justify-content:center}
+  .step h3{font-size:1.12rem;margin-bottom:.3em}
+  .step p{color:var(--mut);margin:.2em 0 .7em}
+  .ex{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:680px){.ex{grid-template-columns:1fr}}
+  .ex figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+  .ex figure img{width:100%;display:block}
+  .ex figcaption{padding:12px 14px;font-size:.88rem;color:var(--mut);background:var(--card)}
+  .phase{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .phase:last-child{border:none}
+  .phase .tag{flex:0 0 92px;font-family:Sora;font-weight:800;color:var(--amb)}
+  .phase .d strong{display:block;margin-bottom:.2em}
+  .phase .d span{color:var(--mut);font-size:.92rem}
+  footer{padding:46px 0;text-align:center;color:var(--mut);font-size:.9rem}
+  nav a,nav .brand{white-space:nowrap} @media(max-width:1240px){nav .wrap{gap:14px} nav .links{gap:13px}} @media(max-width:1100px){nav .links a.sec[href="#edicoes"],nav .links a.sec[href="#roadmap"]{display:none}}
+  .pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.3em .8em;font-size:.78rem;color:var(--mut);margin:0 4px}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="brand" href="#top"><span class="emoji">🎭</span> Treinador de Carisma</a>
+  <span class="sep">|</span>
+  <span class="clubpro">
+    <a class="inema" href="https://inema.club" target="_blank" rel="noopener">INEMA.CLUB</a>
+    <span class="sep">-</span>
+    <a class="pro" href="https://inema.pro" target="_blank" rel="noopener">PRO</a>
+  </span>
+  <div class="links">
+    <a class="sec" href="#oque">O que é</a>
+    <a class="sec" href="#fluxo">Como funciona</a>
+    <a class="sec" href="#edicoes">Edições</a>
+    <a class="sec" href="#guia">Guia de uso</a>
+    <a class="sec" href="#roadmap">Roadmap</a>
+    <span class="lang"><a class="on" href="./">PT</a><a href="en/">EN</a><a href="es/">ES</a></span>
+    <button class="tgl" id="themeToggle" aria-label="Alternar tema" title="Alternar tema">🌙</button>
+    <a class="btn" href="https://github.com/inematds/treinador-carisma" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="glow"></div>
+  <div class="wrap">
+    <div>
+      <span class="chip">Simulador de conversa com IA · código aberto</span>
+      <h1>Carisma não se assiste. <span class="amb">Se ensaia.</span></h1>
+      <p class="lead">Converse com um(a) treinador(a), entre em cenas reais e receba uma correção por vez, até ficar natural. Por texto ou por voz.</p>
+      <div class="cta">
+        <a class="btn" href="../treinar/">Abrir o treinador</a>
+        <a class="btn ghost" href="#guia">Ver o guia</a>
+        <a class="btn ghost" href="https://github.com/inematds/treinador-carisma" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+    <figure><img src="assets/banner.jpg" alt="Banner do Treinador de Carisma: Carisma não se assiste, se ensaia"></figure>
+  </div>
+</header>
+
+<section id="resumo" class="resumo"><div class="wrap">
+  <span class="chip">Em resumo</span>
+  <p>O Treinador de Carisma é um app em que você treina conversas com uma inteligência artificial. Ela faz o papel de outra pessoa (um colega atrasado, um chefe exigente, alguém num café), você conversa e, no fim, um avaliador diz o que funcionou e dá uma única correção para você refazer a cena. Serve para quem quer se comunicar melhor no trabalho (modo Carisma) ou nos relacionamentos (modo Conquista). Abre direto no navegador, ou roda no seu PC com o Ollama ou com a sua assinatura do ChatGPT (Codex), do Claude ou do Gemini.</p>
+</div></section>
+
+<section id="oque"><div class="wrap">
+  <span class="chip">O que é</span>
+  <h2>Um ensaio de verdade, não mais uma aula</h2>
+  <p class="sub">Assistir a vídeos sobre carisma não muda como você fala. O que muda é praticar, receber retorno e repetir, e é isso que o app faz.</p>
+  <figure style="margin:0 0 26px;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -30px #000"><img src="assets/banner-grade.jpg" alt="Cenas reais, uma correção, refazer e comparar, voz ou texto, Carisma e Conquista, local ou nuvem" loading="lazy" style="width:100%;display:block"></figure>
+  <div class="grid g3">
+    <div class="card"><h3>🎭 Personagens com vontade própria</h3><p>Cada cena tem uma pessoa com humor, pressa e um estado escondido (abertura, paciência, confiança). Ela pode se fechar, se irritar ou dizer não, e um termômetro mostra a conexão subindo ou caindo.</p></div>
+    <div class="card"><h3>🎯 Uma correção por vez</h3><p>O avaliador dá nota a cada critério da cena e cita a fala que justifica cada nota. Depois escolhe uma única coisa para você mudar na próxima tentativa.</p></div>
+    <div class="card"><h3>↻ Refazer e comparar</h3><p>Você refaz a mesma cena, com a pessoa no mesmo estado inicial, e vê as notas lado a lado com setas. O progresso por competência fica guardado no seu navegador.</p></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h3>💼 Modo Carisma</h3><p>Com a Executiva Marina ou o Executivo Ricardo: feedback difícil, dizer não ao chefe, networking, pitch em um minuto, contar um caso na entrevista, abrir uma apresentação, interromper com elegância. São 10 cenas em 5 competências.</p></div>
+    <div class="card"><h3>🌹 Modo Conquista</h3><p>Com a Valentina ou o Henrique: puxar conversa num café, flertar com leveza, ler sinais mistos, convidar sem pressão, lidar com um "não" e retomar contato. Você escolhe se conversa com uma mulher ou com um homem. Insistir ou pressionar tira ponto.</p></div>
+  </div>
+</div></section>
+
+<section id="fluxo"><div class="wrap">
+  <span class="chip">Como funciona</span>
+  <h2>O ciclo do ensaio</h2>
+  <p class="sub">Três papéis de IA trabalham separados: o treinador orienta, o personagem conversa e o avaliador dá as notas. Nenhum faz o papel do outro.</p>
+  <div class="flow">
+    <span>Escolha a cena</span><span class="arr">→</span>
+    <span>Treinador explica</span><span class="arr">→</span>
+    <span>Conversa com o personagem</span><span class="arr">→</span>
+    <span>Pausa</span><span class="arr">→</span>
+    <span>Notas + uma correção</span><span class="arr">→</span>
+    <span>Refazer</span><span class="arr">→</span>
+    <span>Comparar</span>
+  </div>
+  <div class="grid g3" style="margin-top:22px">
+    <div class="card"><h3>🧑‍🏫 Treinador</h3><p>Conversa livre com você: tira dúvidas, sugere a cena certa para o seu momento e explica a correção em poucas frases.</p></div>
+    <div class="card"><h3>🎭 Personagem</h3><p>Fala curta e natural, reage ao que você diz e atualiza o próprio estado. Esconde um segredo que só conta se você perguntar bem.</p></div>
+    <div class="card"><h3>📏 Avaliador</h3><p>Usa os critérios da cena e uma régua de calibração (uma fala nota 3 e outra nota 8). Nota sem fala citada é descartada.</p></div>
+  </div>
+</div></section>
+
+<section id="edicoes"><div class="wrap">
+  <span class="chip">Duas edições, um núcleo</span>
+  <h2>Sem servidor ou no seu PC</h2>
+  <p class="sub">É o mesmo app nas duas edições. Muda só de onde vem a IA e a voz. O que melhora no núcleo vale para as duas.</p>
+  <div class="grid g2">
+    <div class="card"><h3>☁️ Edição Nuvem</h3><p>Abre pelo link, sem instalar nada. A IA vem de: um modelo pequeno rodando no próprio navegador (grátis, precisa de placa de vídeo com WebGPU), o login com a sua conta OpenRouter, a sua chave da OpenAI ou da Anthropic, ou o Ollama do seu PC. As chaves ficam só no seu navegador. A voz é a do navegador.</p></div>
+    <div class="card"><h3>🖥️ Edição Local</h3><p>Roda no seu PC (ou numa VPS) com <code>deploy/iniciar.sh</code>. A IA pode ser o Ollama, sem API e sem internet, ou a sua assinatura do ChatGPT (Codex), do Claude ou do Gemini, usando as ferramentas de linha de comando já logadas. A voz roda local: Whisper para ouvir, Piper para falar.</p></div>
+  </div>
+</div></section>
+
+<section id="pre"><div class="wrap">
+  <span class="chip">Pré-requisitos</span>
+  <h2>O que você precisa</h2>
+  <p class="sub">Para a Edição Nuvem, só um navegador. Para a Edição Local, Python 3 e pelo menos um motor de IA.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Python 3 + git</h3><p>O servidor local é em Python (FastAPI). O <code>iniciar.sh</code> cria o ambiente sozinho.</p><pre><span class="k">python3</span> --version
+<span class="k">git</span> --version</pre></div>
+    <div class="card"><h3>Um motor de IA</h3><p>O Ollama com um modelo de 8B ou mais, ou o Codex/Claude CLI logado com a sua assinatura.</p><pre><span class="k">ollama</span> pull qwen3:30b
+<span class="c"># ou</span>
+<span class="k">codex</span> login</pre></div>
+    <div class="card"><h3>Voz (opcional)</h3><p>Whisper para ouvir e Piper com uma voz pt_BR para falar. Sem eles, o app usa a voz do navegador.</p><pre><span class="k">TC_INSTALAR_VOZ=1</span> deploy/iniciar.sh</pre></div>
+  </div>
+</div></section>
+
+<section id="guia"><div class="wrap">
+  <span class="chip">Guia de uso · passo a passo</span>
+  <h2>Do zero ao primeiro ensaio</h2>
+  <p class="sub">Use pelo link (Edição Nuvem) ou instale no seu PC (Edição Local). O treino é igual nas duas.</p>
+
+  <div class="step"><div class="b">1</div><div>
+    <h3>Abra o app</h3>
+    <p>Pela internet, abra o link abaixo. Para conhecer sem IA, o modo "Demonstração" responde com falas simuladas.</p>
+<pre><span class="s">https://inematds.github.io/treinador-carisma/treinar/</span></pre>
+    <p>No seu PC (Edição Local):</p>
+<pre><span class="k">git clone</span> <span class="s">https://github.com/inematds/treinador-carisma</span>
+<span class="k">cd</span> treinador-carisma
+<span class="k">deploy/iniciar.sh</span>          <span class="c"># abre em http://127.0.0.1:8787</span>
+<span class="k">TC_PORTA=8790 deploy/iniciar.sh</span>   <span class="c"># se a 8787 estiver ocupada</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">2</div><div>
+    <h3>Escolha onde a IA roda</h3>
+    <p>No ⚙ do topo. Na Edição Local, o app detecta sozinho o Ollama e as assinaturas logadas e mostra o que está pronto. Na Nuvem, escolha o modelo no navegador, entre com a sua conta OpenRouter ou cole a sua chave.</p>
+<pre><span class="c"># Ollama direto a partir da página na internet: libere a origem</span>
+<span class="k">OLLAMA_ORIGINS</span>=<span class="s">https://inematds.github.io</span> ollama serve</pre>
+  </div></div>
+
+  <div class="step"><div class="b">3</div><div>
+    <h3>Escolha o modo e quem te treina</h3>
+    <p>Carisma (Executiva Marina ou Executivo Ricardo) ou Conquista (Valentina ou Henrique). No Conquista, diga se você vai conversar com uma mulher ou com um homem. Dá para trocar depois, no topo.</p>
+  </div></div>
+
+  <div class="step"><div class="b">4</div><div>
+    <h3>Converse com o(a) treinador(a) ou vá direto a uma cena</h3>
+    <p>No painel, conte o que anda te travando. O(a) treinador(a) sugere uma cena e mostra o botão "Ensaiar". Ou escolha na lista, agrupada por competência, com o nível (●●○) e a sua melhor nota.</p>
+  </div></div>
+
+  <div class="step"><div class="b">5</div><div>
+    <h3>Ensaie, peça a pausa e refaça</h3>
+    <p>Fale pelo microfone ou digite. A cena termina sozinha (sucesso, fracasso ou limite de falas), ou você clica em "Pausa: me avalie". Leia a correção, clique em "Refazer a cena" e compare as notas.</p>
+  </div></div>
+
+  <div class="step"><div class="b">6</div><div>
+    <h3>Crie as suas cenas e venda, se quiser</h3>
+    <p>Cada cena é um arquivo YAML. Copie um, mude o contexto, o personagem e os critérios, valide e gere o app. A licença é MIT: pode copiar, ajustar e vender.</p>
+<pre><span class="k">cp</span> cenas/carisma/conexao/networking-evento.yaml cenas/carisma/conexao/minha-cena.yaml
+<span class="k">cd</span> app && <span class="k">npm install</span>
+<span class="k">npm run cenas</span>        <span class="c"># valida as cenas</span>
+<span class="k">npm test</span>             <span class="c"># testes do núcleo</span>
+<span class="k">npm run build</span>        <span class="c"># gera ../treinar</span>
+<span class="k">npx vite-node</span> scripts/calibrar.ts -- --gateway http://127.0.0.1:8787 --motor ollama --modelo qwen3:30b</pre>
+  </div></div>
+</div></section>
+
+<section id="exemplos"><div class="wrap">
+  <span class="chip">Telas reais</span>
+  <h2>Como fica na prática</h2>
+  <p class="sub">Capturas da Edição Local rodando com o Ollama neste PC.</p>
+  <div class="ex">
+    <figure><img src="assets/tela-1-inicio.jpg" alt="Tela inicial com os modos Carisma e Conquista e a escolha do treinador" loading="lazy"><figcaption>Início: escolha o modo e quem te treina.</figcaption></figure>
+    <figure><img src="assets/tela-1b-inicio-conquista.jpg" alt="Modo Conquista com Valentina e Henrique e a escolha de com quem conversar" loading="lazy"><figcaption>Modo Conquista: treinador(a) e com quem você vai conversar nas cenas.</figcaption></figure>
+    <figure><img src="assets/tela-4-cena.jpg" alt="Cena com Marcos, termômetro de conexão e transcrição" loading="lazy"><figcaption>Na cena, o personagem reage e o termômetro mostra a conexão.</figcaption></figure>
+    <figure><img src="assets/tela-5-correcao.jpg" alt="Pausa com nota, uma correção e notas por critério com a fala citada" loading="lazy"><figcaption>Na pausa: uma correção, o ponto forte e as notas com a fala que as justifica.</figcaption></figure>
+    <figure><img src="assets/tela-2-painel.jpg" alt="Painel com conversa com o treinador, radar de progresso e lista de cenas" loading="lazy"><figcaption>Painel: conversa com o treinador, radar das competências e as cenas.</figcaption></figure>
+    <figure><img src="assets/tela-6-mobile.jpg" alt="App no celular" loading="lazy"><figcaption>Funciona no celular.</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="roadmap"><div class="wrap">
+  <span class="chip">Roadmap</span>
+  <h2>Até conversar com um avatar em tempo real</h2>
+  <p class="sub">Cada fase sai nas duas edições ao mesmo tempo. O plano completo está no <a href="https://github.com/inematds/treinador-carisma/blob/main/PLANO.md">PLANO.md</a>.</p>
+  <div class="phase"><div class="tag">Fase 1 ✓</div><div class="d"><strong>Base completa (v1.0.0)</strong><span>Os dois modos, os 4 treinadores, 16 cenas, avaliador calibrado, texto e voz em turnos, Edição Nuvem e Edição Local.</span></div></div>
+  <div class="phase"><div class="tag">Fase 2</div><div class="d"><strong>Conversa natural</strong><span>Voz contínua, sem botão, interrompível, com resposta em menos de 1,5 s, pausa automática quando o avaliador vê um erro grave e métricas de fala mais finas.</span></div></div>
+  <div class="phase"><div class="tag">Fase 3</div><div class="d"><strong>Rosto</strong><span>Dos rostos ilustrados atuais para um avatar 3D com a boca sincronizada à fala.</span></div></div>
+  <div class="phase"><div class="tag">Fase 4</div><div class="d"><strong>Avatar em tempo real</strong><span>Rosto realista falando com você ao vivo: por serviço de avatar na Nuvem, ou por modelo na placa de vídeo na Edição Local.</span></div></div>
+</div></section>
+
+<footer>
+  <div class="wrap">
+    <div class="pill">React + Vite</div><div class="pill">FastAPI</div><div class="pill">Ollama · Codex · Claude · Gemini</div><div class="pill">Whisper + Piper</div><div class="pill">MIT</div>
+    <p style="margin-top:18px">Treinador de Carisma · código aberto, copie e ajuste à vontade ·
+      <a href="https://github.com/inematds/treinador-carisma">inematds/treinador-carisma</a> ·
+      <a href="https://inema.club">INEMA.CLUB</a></p>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var KEY='treinador-carisma-theme'; // troque treinador-carisma pelo nome do projeto
+    var b=document.body, t=document.getElementById('themeToggle');
+    if(localStorage.getItem(KEY)==='light'){ b.classList.add('light'); t.textContent='☀️'; }
+    t.addEventListener('click',function(){
+      var light=b.classList.toggle('light');
+      t.textContent=light?'☀️':'🌙';
+      localStorage.setItem(KEY, light?'light':'dark');
+    });
+  })();
+</script>
+</body>
+</html>

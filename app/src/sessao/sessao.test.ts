@@ -217,3 +217,12 @@ describe('métricas', () => {
     expect(metricas([{ quem: 'voce', texto: 'oi' }]).palavras_min).toBeNull();
   });
 });
+
+describe('avaliador: formato evidência antes da nota', () => {
+  it('aceita {analise: [{id, evidencia, nota}]}', () => {
+    const analise = cena.criterios.map((c) => ({ id: c.id, evidencia: "fala 1: 'x'", nota: 8 }));
+    const a = validarAvaliacao({ analise, correcao_unica: 'Faça X.', ponto_forte: 'Y' }, cena);
+    expect(a.nota_geral).toBe(8);
+    expect(Object.keys(a.evidencias)).toHaveLength(cena.criterios.length);
+  });
+});

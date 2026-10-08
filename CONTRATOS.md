@@ -41,8 +41,11 @@ Pedido:
   "modelo": "opcional",
   "mensagens": [{"role":"system|user|assistant","content":"..."}],
   "json": false,
-  "temperatura": 0.7 }
+  "temperatura": 0.7,
+  "pensar": false }
 ```
+`pensar` (só ollama): liga o raciocínio do modelo (`think`). Opcional; o avaliador NÃO usa (≈50 s por avaliação no qwen3:30b) — usa o formato "evidência antes da nota", que deu a mesma qualidade em segundos.
+
 Resposta: `text/plain; charset=utf-8` em streaming (chunks de texto). Erro: HTTP 4xx/5xx com `{"erro":"..."}`.
 
 - **ollama:** `POST /api/chat` com `stream:true`, `think:false`, `options.temperature`, e `format:"json"` quando `json:true`. Repassa `message.content` de cada linha NDJSON.

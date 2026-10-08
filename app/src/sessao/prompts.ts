@@ -26,6 +26,13 @@ export function transcricao(falas: Fala[], nomePersonagem: string): string {
     .join('\n');
 }
 
+function falasUsuario(falas: Fala[]): string {
+  return falas
+    .filter((f) => f.quem === 'voce')
+    .map((f, i) => `fala ${i + 1}: ${f.texto}`)
+    .join('\n');
+}
+
 export function msgsPersonagem(cena: Cena, alvo: Alvo, falas: Fala[], estado: EstadoPersonagem): Msg[] {
   const id = identidade(cena, alvo);
   const p = cena.personagem;
@@ -52,7 +59,7 @@ export function msgsPersonagem(cena: Cena, alvo: Alvo, falas: Fala[], estado: Es
 }
 
 const REGRA_CONQUISTA =
-  '6. Modo conquista: insistir depois de sinal negativo, pressionar, elogio invasivo ou qualquer manipulação derruba o critério de pressão para 2 ou menos. Ler a reciprocidade, recuar com elegância e aceitar um "não" com leveza contam a favor.';
+  '7. Modo conquista: insistir depois de sinal negativo, pressionar, elogio invasivo ou qualquer manipulação derruba o critério de pressão para 2 ou menos. Ler a reciprocidade, recuar com elegância e aceitar um "não" com leveza contam a favor.';
 
 export function msgsAvaliador(cena: Cena, alvo: Alvo, falas: Fala[]): Msg[] {
   const id = identidade(cena, alvo);
@@ -77,7 +84,12 @@ export function msgsAvaliador(cena: Cena, alvo: Alvo, falas: Fala[]): Msg[] {
   });
   return [
     { role: 'system', content: sistema },
-    { role: 'user', content: `Transcrição:\n${transcricao(falas, id.nome)}\n\nAvalie e responda com o JSON.` },
+    {
+      role: 'user',
+      content:
+        `Transcrição:\n${transcricao(falas, id.nome)}\n\n` +
+        `Falas do USUÁRIO a avaliar (procure cada critério em TODAS elas):\n${falasUsuario(falas)}\n\nAvalie e responda com o JSON.`,
+    },
   ];
 }
 

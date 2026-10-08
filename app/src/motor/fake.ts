@@ -45,9 +45,7 @@ export function motorFake(atrasoMs = 0): Motor {
         const notas = Object.fromEntries(ids.map((id, i) => [id, Math.min(10, base + (i % 2))]));
         const evid = Object.fromEntries(ids.map((id) => [id, `fala 1: '${primeira.slice(0, 40)}'`]));
         yield JSON.stringify({
-          notas,
-          evidencias: evid,
-          nota_geral: base,
+          analise: ids.map((id) => ({ id, evidencia: evid[id], nota: notas[id] })),
           ponto_forte: 'Você manteve a calma do começo ao fim.',
           correcao_unica: 'Abra com um fato concreto antes de qualquer opinião.',
         });

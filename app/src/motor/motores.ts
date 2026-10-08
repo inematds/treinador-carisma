@@ -18,7 +18,7 @@ export function motorGateway(motor: string, modelo?: string, base = ''): Motor {
       const r = await fetch(base ? `${base}/api/chat` : 'api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ motor, modelo, mensagens: msgs, json: !!o.json, temperatura: o.temperatura ?? 0.7 }),
+        body: JSON.stringify({ motor, modelo, mensagens: msgs, json: !!o.json, temperatura: o.temperatura ?? 0.7, pensar: !!o.pensar }),
         signal: o.signal,
       });
       if (!r.ok) throw await erroHttp(r, rotulos[motor] ?? motor);
@@ -42,7 +42,7 @@ export function motorOllamaDireto(url: string, modelo: string): Motor {
           model: modelo,
           messages: msgs,
           stream: true,
-          think: false,
+          think: !!o.pensar,
           ...(o.json ? { format: 'json' } : {}),
           options: { temperature: o.temperatura ?? 0.7 },
         }),

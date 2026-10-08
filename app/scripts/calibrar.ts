@@ -22,7 +22,7 @@ async function nota(cena: Cena, texto: string): Promise<number | null> {
   if (cena.abertura_personagem?.trim()) falas.push({ quem: 'personagem', texto: cena.abertura_personagem });
   falas.push({ quem: 'voce', texto });
   try {
-    const a = await pedirJson(motor, msgsAvaliador(cena, 'mulher', falas), (b) => validarAvaliacao(b, cena), 0.2);
+    const a = await pedirJson(motor, msgsAvaliador(cena, 'mulher', falas), (b) => validarAvaliacao(b, cena), 0.2, args.includes('--pensar'));
     return a.nota_geral;
   } catch (e) {
     console.log(`   erro: ${(e as Error).message}`);

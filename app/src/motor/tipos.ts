@@ -8,6 +8,8 @@ export interface Msg {
 export interface OpcoesChat {
   json?: boolean;
   temperatura?: number;
+  /** liga o raciocínio do modelo quando o motor permite (Ollama think) */
+  pensar?: boolean;
   signal?: AbortSignal;
 }
 

@@ -7,13 +7,13 @@ import { expressaoDoEstado, extrairJson, validarAvaliacao, validarPersonagem } f
 export type Fase = 'briefing' | 'cena' | 'avaliando' | 'correcao';
 
 /** Chama o motor pedindo JSON; 1 nova tentativa com o erro; senão lança. */
-export async function pedirJson<T>(motor: Motor, msgs: Parameters<Motor['chat']>[0], validar: (b: unknown) => T, temperatura: number): Promise<T> {
+export async function pedirJson<T>(motor: Motor, msgs: Parameters<Motor['chat']>[0], validar: (b: unknown) => T, temperatura: number, pensar = false): Promise<T> {
   let erro = '';
   for (let i = 0; i < 2; i++) {
     const extra = erro
       ? [{ role: 'user' as const, content: `Sua resposta anterior foi inválida (${erro}). Responda de novo SOMENTE com o objeto JSON pedido.` }]
       : [];
-    const texto = await juntar(motor.chat([...msgs, ...extra], { json: true, temperatura }));
+    const texto = await juntar(motor.chat([...msgs, ...extra], { json: true, temperatura, pensar }));
     try {
       return validar(extrairJson(texto));
     } catch (e) {

@@ -205,6 +205,7 @@ class PedidoChat(BaseModel):
     mensagens: list[Mensagem]
     json_: bool = Field(False, alias="json")
     temperatura: float = 0.7
+    pensar: bool = False  # ollama: liga o raciocínio (think) — usado pelo avaliador
 
 
 ROTULOS = {"system": "[SISTEMA]", "user": "[USUÁRIO]", "assistant": "[ASSISTENTE]"}
@@ -238,7 +239,7 @@ async def gerar_ollama(pedido: PedidoChat) -> AsyncIterator[str]:
                     "model": modelo,
                     "messages": [m.model_dump() for m in pedido.mensagens],
                     "stream": True,
-                    "think": False,
+                    "think": pedido.pensar,
                     "options": {"temperature": pedido.temperatura},
                 }
                 if pedido.json_:

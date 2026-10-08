@@ -8,3 +8,5 @@
 - Edição Nuvem (estática): Ollama direto, WebLLM no navegador, OpenRouter (login OAuth ou chave), OpenAI, Anthropic, demonstração.
 - Edição Local: gateway FastAPI com Ollama e assinaturas Codex / Claude / Gemini (CLIs), voz local (Whisper + Piper), `iniciar.sh/.bat`, Docker.
 - Rostos ilustrados em SVG gerados por código (MIT).
+- Avaliador: evidência antes da nota, escala explícita, crédito para correção de rumo; calibração 14/16 com qwen3:30b (~8 s por cena).
+- Guia landing + guia PT/EN/ES em `guia/`, capa e banners.

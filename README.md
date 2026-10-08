@@ -1,5 +1,17 @@
 # Treinador de Carisma
 
+[![Treinador de Carisma](guia/assets/banner.jpg)](https://inematds.github.io/treinador-carisma/guia/)
+
+**🇧🇷 [Português](README.md) · 🇺🇸 [English](README.en.md) · 🇪🇸 [Español](README.es.md)**
+
+## O que é
+
+O Treinador de Carisma é um app em que você treina conversas com uma inteligência artificial. Ela faz o papel de outra pessoa (um colega atrasado, um chefe exigente, alguém num café), você conversa e, no fim, um avaliador diz o que funcionou e dá uma única correção para você refazer a cena. Serve para quem quer se comunicar melhor no trabalho (modo Carisma) ou nos relacionamentos (modo Conquista). Abre direto no navegador, ou roda no seu PC com o Ollama ou com a sua assinatura do ChatGPT (Codex), do Claude ou do Gemini.
+
+## 📖 Guia de uso
+
+Guia completo (landing + passo a passo): **https://inematds.github.io/treinador-carisma/guia/**
+
 Converse com um(a) treinador(a) de IA, entre em cenas reais (feedback difícil, networking, puxar conversa num café…), receba **uma correção por vez** e refaça até ficar natural. Por texto ou por voz.
 
 - **Modo Carisma:** trabalho e vida social, com treinador Executivo ou Executiva.

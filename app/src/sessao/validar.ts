@@ -53,8 +53,18 @@ const SEM_EVIDENCIA = /^(n[ãa]o apareceu|nenhuma|-|n\/a)?$/i;
 
 export function validarAvaliacao(bruto: unknown, cena: Cena): Avaliacao {
   const d = (bruto ?? {}) as Record<string, unknown>;
-  const notasIn = (d.notas ?? {}) as Record<string, unknown>;
-  const evidIn = (d.evidencias ?? {}) as Record<string, unknown>;
+  let notasIn = (d.notas ?? {}) as Record<string, unknown>;
+  let evidIn = (d.evidencias ?? {}) as Record<string, unknown>;
+  // Formato "evidência antes da nota": {"analise": [{id, evidencia, nota}]}
+  if (Array.isArray(d.analise)) {
+    notasIn = {};
+    evidIn = {};
+    for (const item of d.analise as Record<string, unknown>[]) {
+      if (typeof item?.id !== 'string') continue;
+      notasIn[item.id] = item.nota;
+      evidIn[item.id] = item.evidencia;
+    }
+  }
   const notas: Record<string, number> = {};
   const evidencias: Record<string, string> = {};
   const descartados: string[] = [];

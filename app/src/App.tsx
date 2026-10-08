@@ -13,7 +13,7 @@ import { VERSAO } from './versao';
 /** Escolhe o melhor motor do gateway: Ollama com um modelo bom, senão Codex. */
 function motorDoGateway(s: Saude): Pick<Config, 'gatewayMotor' | 'modelo'> {
   const modelos = s.motores?.ollama?.ok ? (s.motores.ollama.modelos ?? []) : [];
-  const preferidos = ['qwen3.6:35b-a3b', 'qwen3:30b', 'qwen3.8:27b', 'qwen2.5:14b', 'llama3.1:8b'];
+  const preferidos = ['qwen3:30b', 'qwen3.6:35b-a3b', 'qwen3.8:27b', 'qwen2.5:14b', 'llama3.1:8b'];
   const m = preferidos.find((p) => modelos.includes(p)) ?? modelos.find((x) => !/embed|bge/i.test(x));
   if (m) return { gatewayMotor: 'ollama', modelo: m };
   if (s.motores?.codex?.ok) return { gatewayMotor: 'codex', modelo: '' };

@@ -12,12 +12,7 @@ Charisma Coach is an app where you practice conversations with an artificial int
 
 https://inematds.github.io/treinador-carisma/guia/en/
 
-Talk with an AI coach, step into real scenes (tough feedback, networking, starting a conversation at a café…), get **one correction at a time** and redo it until it feels natural. By text or by voice.
-
 > The app interface is in Portuguese for now.
-
-- **Charisma mode:** work and social life, with an Executive coach (man or woman).
-- **Dating mode:** attraction and relationships, with an elegant man or a beautiful woman as coach. Respect and reading the other person's interest count toward the score.
 
 **Use it now (Cloud Edition):** https://inematds.github.io/treinador-carisma/treinar/
 **Guide:** https://inematds.github.io/treinador-carisma/guia/en/

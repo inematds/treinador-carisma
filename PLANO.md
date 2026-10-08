@@ -1,6 +1,6 @@
 # Treinador de Carisma — Plano completo da solução
 
-> Data: 08/10/2026 · Status: **Fase 1 implementada (v1.0.0)** · Pasta: `~/projetos/treinador-carisma`
+> Data: 08/10/2026 · Status: **Fases 1 e 2 implementadas (v1.1.0)** · Fases 3 e 4 no roadmap · Pasta: `~/projetos/treinador-carisma`
 > Origem: análise de `carisma_conquista_treinamento.md` (clipboard, 08/10/2026).
 > Revisão 2: em vez de versões v1…v5, **duas edições completas que evoluem juntas**, com o objetivo final de conversar com um treinador (e depois com um avatar em tempo real).
 
@@ -181,11 +181,14 @@ A voz devolve **visemas** (formas da boca no tempo) quando dá. É isso que alim
 
 Meta: **< 1,5 s** do fim da sua fala até ouvir a resposta, com interrupção natural.
 
-- **Local (cadeia em streaming):** VAD no navegador (Silero VAD WASM) → áudio por WebSocket ao **gateway local** → faster-whisper em streaming → Ollama em streaming (MoE rápido, sem "thinking") → TTS por frase (Kokoro/Piper rápidos; chatterbox para a voz do treinador se a latência permitir) → áudio de volta. Se você começa a falar, o gateway corta o TTS (barge-in).
-- **Nuvem (duas opções):**
-  1. **Realtime de provedor** (fala↔fala nativa, a menor latência), por chave do usuário ou do servidor. Na época, conferir quais provedores/modelos existem e o preço por minuto.
-  2. **Cadeia** whisper-web → LLM por API em streaming → voz do navegador/TTS de API. Mais barata, um pouco mais lenta.
-- O avaliador roda fora do caminho crítico (depois da sua fala, em paralelo), para não atrasar a resposta.
+**Como ficou na Fase 2 (v1.1.0):**
+- **Local (cadeia em streaming, por HTTP):** detector de fala por energia no navegador (AudioWorklet, calibra o ruído nos primeiros 400 ms) → cada pausa de 350 ms fecha um trecho, que vai na hora para `POST /api/stt` (Whisper `small` na GPU, sem tempo por palavra) → 600 ms de silêncio encerram a vez → Ollama em streaming (`qwen3:30b`, sem raciocínio) → o campo `fala` é lido do JSON ainda incompleto e cortado em frases → `POST /api/tts` por frase (Kokoro na GPU, ~0,1 s; Piper como reserva) → a voz da frase seguinte é pedida enquanto a anterior toca. Se você fala por cima, o navegador corta a voz e aborta a geração (barge-in); o gateway libera o modelo na hora.
+- WebSocket e Silero VAD ficaram de fora: HTTP + VAD por energia bastaram para a meta e mantêm o gateway simples. Voltam se o uso real pedir.
+- **Medido** (`app/scripts/latencia.ts`, 16 rodadas, qwen3:30b): p50 **1,34 s** do fim da fala à voz da 1ª frase, sem contar a espera de silêncio (STT 0,38 · modelo 1,16 · voz 0,12, em média). No navegador, do fim do som à voz, contando a espera: **1,27 a 1,75 s**. Picos de 7 s acontecem quando o Ollama recarrega o modelo (o gateway pede `keep_alive` de 30 min).
+- **Nuvem:** cadeia grátis no navegador: reconhecimento contínuo do Web Speech → motor em streaming (Ollama direto, WebLLM ou chave do usuário) → voz do navegador por frase. Sem interrupção: o microfone pausa enquanto o personagem fala, senão o navegador ouviria a própria voz.
+- O avaliador continua fora do caminho crítico; a **pausa automática** é decidida pelo estado escondido do personagem (paciência ≤ 2 ou queda de 20 pontos de conexão), sem chamada extra ao modelo.
+
+**Roadmap (não feito):** realtime de provedor (fala↔fala nativa por API, com custo) e login/plano no Vercel. Os dois contrariam a decisão de 08/10 de manter a Nuvem grátis com a conta de cada usuário; ficam como opção para quem for revender.
 
 ### 4.4 Avatar em tempo real (horizonte final)
 
@@ -271,14 +274,14 @@ O projeto nasce com **toda a estrutura**: núcleo, portas, adaptadores das duas 
 | Fase | Núcleo (vale para as duas) | Edição Nuvem | Edição Local |
 |---|---|---|---|
 | **1. Base completa** | os dois modos e os 4 treinadores; sessão com treinador + personagem + avaliador; 10 cenas Carisma (situações difíceis + conexão) + 6 cenas Conquista (café, evento, mensagem, convite, recusa, reconexão); interface; progresso; calibração | Pages; BYOK + OpenRouter OAuth + WebLLM; texto + voz do navegador | `iniciar.sh/.bat` + compose; Ollama + **assinatura Claude/Codex/Gemini**; gateway com faster-whisper + TTS; texto + voz por turnos |
-| **2. Conversa natural** | barge-in, modo mãos-livres, pausa automática pelo avaliador, métricas de fala | realtime de provedor **ou** cadeia em streaming; Vercel com login/plano | cadeia em streaming < 1,5 s; voz do treinador no chatterbox |
-| **3. Rosto** | avatar ilustrado → VRM com visemas; voz e rosto por personagem | degrau B | degrau B |
-| **4. Avatar em tempo real** | interface `Avatar` com WebRTC | avatar interativo por API (com custo) | lip-sync em tempo real na GPU |
+| **2. Conversa natural ✓ (v1.1.0)** | barge-in, modo mãos-livres, pausa automática, métricas de fala | cadeia em streaming no navegador (sem barge-in); realtime de provedor e login/plano no Vercel → roadmap | cadeia em streaming (p50 1,34 s sem a espera de silêncio); Kokoro com voz feminina; chatterbox opcional com a voz do próprio usuário |
+| **3. Rosto** (roadmap) | avatar ilustrado → VRM com visemas; voz e rosto por personagem | degrau B | degrau B |
+| **4. Avatar em tempo real** (roadmap) | interface `Avatar` com WebRTC | avatar interativo por API (com custo) | lip-sync em tempo real na GPU |
 | **contínuo** | novas cenas nos dois modos, editor de cenas | — | — |
 
 Critério de pronto de cada fase, por edição: `npm test` verde, calibração verde, Playwright do fluxo completo, teste de latência (fase 2+) e uma sessão real gravada como evidência.
 
-Versão do pacote: `vX.XX.YY` (minor incrementa XX e mantém YY; só o major zera). Fase 1 = `1.0.0`.
+Versão do pacote: `vX.XX.YY` (minor incrementa XX e mantém YY; só o major zera). Fase 1 = `1.0.0`; Fase 2 = `1.1.0`.
 
 ---
 
@@ -320,6 +323,9 @@ treinador-carisma/
 | R11 | Modo Conquista virar "técnica de manipulação" | ética codificada nos critérios (pressão e insistência perdem ponto), personagem pode recusar, treino de lidar com a recusa |
 | R12 | Assinatura (Claude/Codex/Gemini) usada fora do uso pessoal | só na Edição Local, com a CLI logada pelo **próprio** usuário no **próprio** PC; nunca na Nuvem servindo outras pessoas com uma assinatura; conferir os termos de cada provedor antes de publicar |
 | R13 | CLI lenta para voz (alguns segundos para iniciar) | processo persistente com streaming (sessão aberta), avaliador fora do caminho crítico; para voz instantânea, Ollama ou realtime |
+| R14 | Modelo local sem raciocínio troca de lado e fala como o usuário (qwen3:30b: ~2 em 8 na cena feedback-atraso, mesmo com o prompt corrigido) | contexto marcado como texto do usuário e falas do personagem como "VOCÊ (Nome)"; para cenas difíceis, motor maior ou assinatura; medir de novo a cada troca de modelo |
+| R15 | Eco da própria voz dispara o microfone no mãos-livres | cancelamento de eco do navegador + limiar 2,2× enquanto o personagem fala; na Nuvem o microfone pausa durante a fala; com caixa de som alta, usar fone |
+| R16 | Whisper "inventa" frases em silêncio ou ruído | trecho quase mudo vira texto vazio; segmentos com `no_speech_prob` alto descartados; frases típicas ("Obrigado.", "Legendas pela comunidade…") filtradas |
 
 **Regra de desenvolvimento:** nenhuma chamada a API paga (LLM, realtime, avatar) durante construção e testes sem autorização explícita. Os testes usam o adaptador `fake` e o Ollama.
 

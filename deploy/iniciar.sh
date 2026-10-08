@@ -30,10 +30,14 @@ fi
 echo "> Instalando dependências ..."
 "$VENV/bin/python" -m pip install -q --upgrade pip >/dev/null
 "$VENV/bin/python" -m pip install -q -r "$GW/requirements.txt"
-# Voz -> texto (opcional): reaproveita whisper já instalado no sistema; TC_INSTALAR_VOZ=1 instala o faster-whisper.
+# Voz (opcional): reaproveita o que já estiver no sistema; TC_INSTALAR_VOZ=1 instala
+# faster-whisper (ouvir), piper-tts e kokoro (falar; kokoro tem voz feminina em português).
+# Os modelos de voz baixam sozinhos no primeiro uso.
 if [ "${TC_INSTALAR_VOZ:-0}" = "1" ]; then
-  "$VENV/bin/python" -m pip install -q faster-whisper
+  "$VENV/bin/python" -m pip install -q faster-whisper piper-tts kokoro
 fi
+# Conversa contínua: carrega ouvido e vozes logo na subida (a 1ª fala não espera).
+export TC_AQUECER="${TC_AQUECER:-1}"
 "$VENV/bin/python" -c "import faster_whisper" 2>/dev/null || "$VENV/bin/python" -c "import whisper" 2>/dev/null \
   || echo "  voz->texto: nenhum whisper encontrado — o microfone usa o navegador (rode com TC_INSTALAR_VOZ=1 para instalar)"
 
@@ -60,7 +64,13 @@ fi
 command -v claude >/dev/null 2>&1 && echo "  claude: ok" || echo "  claude: não instalado (opcional)"
 command -v gemini >/dev/null 2>&1 && echo "  gemini: ok" || echo "  gemini: não instalado (opcional)"
 command -v ffmpeg >/dev/null 2>&1 || echo "  ffmpeg: não instalado — sem ele o /api/stt (voz -> texto) não funciona"
-command -v piper >/dev/null 2>&1 || [ -x "$HOME/.local/bin/piper" ] || echo "  piper: não instalado — a voz usa a do navegador"
+if "$VENV/bin/python" -c "import kokoro" 2>/dev/null; then
+  echo "  voz: kokoro (feminina e masculina)"
+elif command -v piper >/dev/null 2>&1 || [ -x "$HOME/.local/bin/piper" ] || "$VENV/bin/python" -c "import piper" 2>/dev/null; then
+  echo "  voz: piper (só masculina; a feminina usa a do navegador)"
+else
+  echo "  voz: nenhuma local — usa a do navegador (TC_INSTALAR_VOZ=1 instala)"
+fi
 [ -d "$RAIZ/treinar" ] || echo "  aviso: pasta treinar/ ausente — rode o build do app (cd app && npm run build)"
 
 # 4. Porta livre? Senão, ABORTA.

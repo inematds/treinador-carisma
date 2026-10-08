@@ -1,100 +1,42 @@
-// Voz: ouvir (STT) e falar (TTS). Edição Local usa o gateway (Whisper + Piper);
+// Voz: ouvir (STT) e falar (TTS). Edição Local usa o gateway (Whisper + Kokoro/Piper);
 // Nuvem usa o navegador (Web Speech). Toda fala devolve o volume para animar a boca.
-import type { Genero } from '../tipos';
+import { DivisorFrases } from '../sessao/fluxo';
+import { FilaFala, contextoAudio, type VozEscolhida } from './falante';
 
-export type FonteVoz = 'gateway' | 'navegador';
 
 // ---------------- Falar
 
-let audioAtual: HTMLAudioElement | null = null;
-let ctx: AudioContext | null = null;
+let filaAtual: FilaFala | null = null;
 
 export function pararFala() {
-  if (audioAtual) {
-    audioAtual.pause();
-    audioAtual = null;
-  }
+  filaAtual?.parar();
+  filaAtual = null;
   if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
 }
 
-function vozNavegador(genero: Genero): SpeechSynthesisVoice | undefined {
-  const vozes = speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith('pt'));
-  const fem = /female|feminina|luciana|francisca|maria|vit[oó]ria|helo|camila|thalita|leila|raquel/i;
-  const masc = /male|masculina|daniel|antonio|ant[oô]nio|fabio|f[aá]bio|felipe|ricardo|donato|humberto|julio/i;
-  const alvo = genero === 'feminina' ? fem : masc;
-  return vozes.find((v) => alvo.test(v.name) && v.lang === 'pt-BR') ?? vozes.find((v) => alvo.test(v.name)) ?? vozes.find((v) => v.lang === 'pt-BR') ?? vozes[0];
-}
-
-/**
- * Fala o texto. `aoVolume` recebe 0..1 enquanto fala (boca do rosto).
- * Gateway: Piper (voz masculina local); se o gênero for feminino ou o gateway falhar, usa o navegador.
- */
-export async function falar(texto: string, genero: Genero, fonte: FonteVoz, aoVolume: (v: number) => void): Promise<void> {
+/** Fala um texto pronto (treinador). Corta em frases para a voz começar logo. */
+export async function falar(texto: string, voz: VozEscolhida, aoVolume: (v: number) => void): Promise<void> {
   pararFala();
   if (!texto.trim()) return;
-  if (fonte === 'gateway' && genero === 'masculina') {
-    try {
-      await falarGateway(texto, aoVolume);
-      return;
-    } catch {
-      /* cai para o navegador */
-    }
-  }
-  await falarNavegador(texto, genero, aoVolume);
+  const fila = new FilaFala(voz, aoVolume);
+  filaAtual = fila;
+  const div = new DivisorFrases();
+  for (const f of [...div.adicionar(texto + ' '), ...div.fechar()]) fila.adicionar(f);
+  fila.fechar();
+  await fila.terminou;
+  if (filaAtual === fila) filaAtual = null;
 }
 
-async function falarGateway(texto: string, aoVolume: (v: number) => void) {
-  const r = await fetch('api/tts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ texto }) });
-  if (!r.ok) throw new Error(`tts ${r.status}`);
-  const url = URL.createObjectURL(await r.blob());
-  const audio = new Audio(url);
-  audioAtual = audio;
-  ctx ??= new AudioContext();
-  const fonte = ctx.createMediaElementSource(audio);
-  const an = ctx.createAnalyser();
-  an.fftSize = 512;
-  fonte.connect(an);
-  an.connect(ctx.destination);
-  const buf = new Uint8Array(an.fftSize);
-  let raf = 0;
-  const medir = () => {
-    an.getByteTimeDomainData(buf);
-    let s = 0;
-    for (const b of buf) s += ((b - 128) / 128) ** 2;
-    aoVolume(Math.min(1, Math.sqrt(s / buf.length) * 5));
-    raf = requestAnimationFrame(medir);
-  };
-  await new Promise<void>((ok, falha) => {
-    audio.onended = () => ok();
-    audio.onerror = () => falha(new Error('erro no áudio'));
-    audio.play().then(medir, falha);
-  });
-  cancelAnimationFrame(raf);
-  aoVolume(0);
-  URL.revokeObjectURL(url);
+/** Abre uma fila para frases que ainda vão chegar (personagem em streaming). */
+export function abrirFila(voz: VozEscolhida, aoVolume: (v: number) => void, aoFrase?: (i: number, f: string) => void): FilaFala {
+  pararFala();
+  filaAtual = new FilaFala(voz, aoVolume, aoFrase);
+  return filaAtual;
 }
 
-function falarNavegador(texto: string, genero: Genero, aoVolume: (v: number) => void): Promise<void> {
-  if (typeof speechSynthesis === 'undefined') return Promise.resolve();
-  return new Promise((ok) => {
-    const u = new SpeechSynthesisUtterance(texto);
-    u.lang = 'pt-BR';
-    const v = vozNavegador(genero);
-    if (v) u.voice = v;
-    u.rate = 1.02;
-    u.pitch = genero === 'feminina' ? 1.08 : 0.92;
-    // Sem acesso ao áudio do navegador: anima a boca por sílabas aproximadas.
-    let t = 0;
-    const iv = setInterval(() => aoVolume(0.25 + 0.65 * Math.abs(Math.sin((t += 0.9)))), 90);
-    const fim = () => {
-      clearInterval(iv);
-      aoVolume(0);
-      ok();
-    };
-    u.onend = fim;
-    u.onerror = fim;
-    speechSynthesis.speak(u);
-  });
+/** Libera o áudio do navegador no primeiro clique (política de autoplay). */
+export function liberarAudio() {
+  contextoAudio();
 }
 
 // ---------------- Ouvir
@@ -145,7 +87,7 @@ export function ouvirGateway(aoVolume: (v: number) => void): Escuta {
     const rec = new MediaRecorder(stream);
     const partes: Blob[] = [];
     rec.ondataavailable = (e) => partes.push(e.data);
-    ctx ??= new AudioContext();
+    const ctx = contextoAudio();
     const an = ctx.createAnalyser();
     ctx.createMediaStreamSource(stream).connect(an);
     const buf = new Uint8Array(an.fftSize);
@@ -172,6 +114,81 @@ export function ouvirGateway(aoVolume: (v: number) => void): Escuta {
     return { texto: d.texto.trim(), duracao_s };
   })();
   return { parar: () => parar(), resultado };
+}
+
+/**
+ * Mãos-livres no navegador (Edição Nuvem): escuta contínua do Web Speech. Sua vez acaba
+ * depois de `silencioMs` sem palavra nova. Sem interrupção: o navegador ouviria a própria voz.
+ */
+export function escutaContinuaNavegador(
+  aoFalar: (f: { texto: string; duracao_s: number; inicio: number }) => void,
+  aoParcial: (t: string) => void,
+  silencioMs = 900,
+): { parar(): void; pausar(p: boolean): void } {
+  const w = window as unknown as Record<string, new () => SpeechRecognitionLike>;
+  const R = w.SpeechRecognition || w.webkitSpeechRecognition;
+  let rec: SpeechRecognitionLike | null = null;
+  let final = '';
+  let inicio = 0;
+  let ultimo = 0;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let ativo = true;
+  let pausado = false;
+  let aberto = false;
+  const entregar = () => {
+    const t = final.trim();
+    final = '';
+    if (t) aoFalar({ texto: t, duracao_s: Math.max(0, (ultimo - inicio) / 1000), inicio });
+  };
+  const abrir = () => {
+    if (!ativo || pausado || aberto) return;
+    aberto = true;
+    rec = new R();
+    rec.lang = 'pt-BR';
+    rec.interimResults = true;
+    rec.continuous = true;
+    rec.onresult = (ev) => {
+      let prov = '';
+      if (!final && !inicio) inicio = performance.now();
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const r = ev.results[i];
+        if (r.isFinal) final += r[0].transcript + ' ';
+        else prov += r[0].transcript;
+      }
+      ultimo = performance.now();
+      aoParcial((final + prov).trim());
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (!prov) {
+          entregar();
+          inicio = 0;
+        }
+      }, silencioMs);
+    };
+    rec.onerror = () => {};
+    rec.onend = () => {
+      aberto = false;
+      setTimeout(abrir, 150);
+    }; // o Chrome encerra sozinho de tempos em tempos
+    rec.start();
+  };
+  abrir();
+  return {
+    parar() {
+      ativo = false;
+      clearTimeout(timer);
+      rec?.stop();
+    },
+    pausar(p: boolean) {
+      pausado = p;
+      if (p) {
+        clearTimeout(timer);
+        final = '';
+        inicio = 0;
+        rec?.stop();
+      } else abrir();
+    },
+  };
 }
 
 interface SpeechRecognitionLike {

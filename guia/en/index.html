@@ -94,7 +94,7 @@
   .ex figcaption{padding:12px 14px;font-size:.88rem;color:var(--mut);background:var(--card)}
   .phase{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
   .phase:last-child{border:none}
-  .phase .tag{flex:0 0 92px;font-family:Sora;font-weight:800;color:var(--amb)}
+  .phase .tag{flex:0 0 118px;font-family:Sora;font-weight:800;color:var(--amb)}
   .phase .d strong{display:block;margin-bottom:.2em}
   .phase .d span{color:var(--mut);font-size:.92rem}
   footer{padding:46px 0;text-align:center;color:var(--mut);font-size:.9rem}
@@ -188,8 +188,8 @@
   <h2>Serverless or on your PC</h2>
   <p class="sub">It's the same app in both editions. Only where the AI and the voice come from changes. Whatever improves in the core applies to both.</p>
   <div class="grid g2">
-    <div class="card"><h3>☁️ Cloud Edition</h3><p>Opens from the link, with nothing to install. The AI comes from: a small model running in the browser itself (free, needs a graphics card with WebGPU), signing in with your OpenRouter account, your OpenAI or Anthropic key, or the Ollama on your PC. Keys stay only in your browser. The voice is the browser's.</p></div>
-    <div class="card"><h3>🖥️ Local Edition</h3><p>Runs on your PC (or on a VPS) with <code>deploy/iniciar.sh</code>. The AI can be Ollama, with no API and no internet, or your ChatGPT (Codex), Claude or Gemini subscription, through the command-line tools you're already logged into. The voice runs locally: Whisper to listen, Piper to speak.</p></div>
+    <div class="card"><h3>☁️ Cloud Edition</h3><p>Opens from the link, with nothing to install. The AI comes from: a small model running in the browser itself (free, needs a graphics card with WebGPU), signing in with your OpenRouter account, your OpenAI or Anthropic key, or the Ollama on your PC. Keys stay only in your browser. The voice is the browser's; in continuous conversation the microphone pauses while the character speaks.</p></div>
+    <div class="card"><h3>🖥️ Local Edition</h3><p>Runs on your PC (or on a VPS) with <code>deploy/iniciar.sh</code>. The AI can be Ollama, with no API and no internet, or your ChatGPT (Codex), Claude or Gemini subscription, through the command-line tools you're already logged into. The voice runs locally: Whisper to listen, Kokoro (female and male voices) or Piper to speak. In continuous conversation you can interrupt the character by talking over them.</p></div>
   </div>
 </div></section>
 
@@ -203,7 +203,7 @@
     <div class="card"><h3>An AI engine</h3><p>Ollama with an 8B-or-larger model, or the Codex/Claude CLI logged in with your subscription.</p><pre><span class="k">ollama</span> pull qwen3:30b
 <span class="c"># or</span>
 <span class="k">codex</span> login</pre></div>
-    <div class="card"><h3>Voice (optional)</h3><p>Whisper to listen and Piper with a pt_BR voice to speak. Without them, the app uses the browser's voice.</p><pre><span class="k">TC_INSTALAR_VOZ=1</span> deploy/iniciar.sh</pre></div>
+    <div class="card"><h3>Voice (optional)</h3><p>Whisper to listen and Kokoro or Piper to speak (Kokoro has a female Portuguese voice). The voice models download on first use. Without them, the app uses the browser's voice.</p><pre><span class="k">TC_INSTALAR_VOZ=1</span> deploy/iniciar.sh</pre></div>
   </div>
 </div></section>
 
@@ -242,7 +242,7 @@
 
   <div class="step"><div class="b">5</div><div>
     <h3>Rehearse, ask for the pause and redo</h3>
-    <p>Speak into the microphone or type. The scene ends by itself (success, failure or line limit), or you click "Pausa: me avalie" (Pause: evaluate me). Read the correction, click "Refazer a cena" (Redo the scene) and compare the scores.</p>
+    <p>Speak into the microphone or type. Tick "Conversa contínua (mãos-livres)" (continuous conversation, hands-free) to talk without a button: the microphone stays open, your turn ends after a moment of silence and the character answers out loud, sentence by sentence. In the Local Edition, talking over the character interrupts them. The scene ends by itself (success, failure or line limit), the coach pauses on their own when the conversation goes off track, or you click "Pausa: me avalie" (Pause: evaluate me). Read the correction, click "Refazer a cena" (Redo the scene) and compare the scores.</p>
   </div></div>
 
   <div class="step"><div class="b">6</div><div>
@@ -276,14 +276,14 @@
   <h2>All the way to talking with a real-time avatar</h2>
   <p class="sub">Each phase ships in both editions at the same time. The full plan is in <a href="https://github.com/inematds/treinador-carisma/blob/main/PLANO.md">PLANO.md</a> (in Portuguese).</p>
   <div class="phase"><div class="tag">Phase 1 ✓</div><div class="d"><strong>Complete base (v1.0.0)</strong><span>Both modes, the 4 coaches, 16 scenes, calibrated evaluator, turn-based text and voice, Cloud Edition and Local Edition.</span></div></div>
-  <div class="phase"><div class="tag">Phase 2</div><div class="d"><strong>Natural conversation</strong><span>Continuous voice, no button, interruptible, with responses in under 1.5 s, automatic pause when the evaluator spots a serious mistake and finer speech metrics.</span></div></div>
-  <div class="phase"><div class="tag">Phase 3</div><div class="d"><strong>Face</strong><span>From the current illustrated faces to a 3D avatar with lips synced to speech.</span></div></div>
-  <div class="phase"><div class="tag">Phase 4</div><div class="d"><strong>Real-time avatar</strong><span>A realistic face talking with you live: through an avatar service in the Cloud, or through a model on the graphics card in the Local Edition.</span></div></div>
+  <div class="phase"><div class="tag">Phase 2 ✓</div><div class="d"><strong>Natural conversation (v1.1.0)</strong><span>Continuous conversation with no button, spoken reply sentence by sentence while the AI is still writing, interrupting by talking over the character (Local Edition), automatic pause when the conversation goes off track, a local female voice (Kokoro) and metrics for response time, pauses and interruptions. Measured on local Ollama: about 1.3 s from the end of your speech to the character's voice, not counting the moment of silence that marks the end of your turn.</span></div></div>
+  <div class="phase"><div class="tag">Phase 3 · roadmap</div><div class="d"><strong>Face</strong><span>From the current illustrated faces to a 3D avatar with lips synced to speech.</span></div></div>
+  <div class="phase"><div class="tag">Phase 4 · roadmap</div><div class="d"><strong>Real-time avatar</strong><span>A realistic face talking with you live: through an avatar service in the Cloud, or through a model on the graphics card in the Local Edition.</span></div></div>
 </div></section>
 
 <footer>
   <div class="wrap">
-    <div class="pill">React + Vite</div><div class="pill">FastAPI</div><div class="pill">Ollama · Codex · Claude · Gemini</div><div class="pill">Whisper + Piper</div><div class="pill">MIT</div>
+    <div class="pill">React + Vite</div><div class="pill">FastAPI</div><div class="pill">Ollama · Codex · Claude · Gemini</div><div class="pill">Whisper + Kokoro + Piper</div><div class="pill">MIT</div>
     <p style="margin-top:18px">Charisma Coach · open source, copy and adapt freely ·
       <a href="https://github.com/inematds/treinador-carisma">inematds/treinador-carisma</a> ·
       <a href="https://inema.club">INEMA.CLUB</a></p>

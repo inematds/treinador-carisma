@@ -23,7 +23,8 @@ https://inematds.github.io/treinador-carisma/guia/es/
 |---|---|---|
 | Cómo se abre | enlace en el navegador | `deploy/iniciar.sh` (o `iniciar.bat`, o `docker compose`) |
 | IA | modelo en el navegador (WebLLM), Ollama directo, OpenRouter (inicio de sesión), OpenAI/Anthropic (tu clave) | Ollama (sin API) o **tu suscripción** Codex / Claude / Gemini, mediante las CLIs autenticadas |
-| Voz | voz del navegador | Whisper + Piper locales |
+| Voz | voz del navegador | Whisper + Kokoro (voz femenina y masculina) o Piper, locales |
+| Conversación continua | sí (el micrófono se pausa mientras el personaje habla) | sí, con interrupción: hablar encima corta al personaje |
 
 ## Ejecutar en tu PC
 
@@ -32,7 +33,7 @@ git clone https://github.com/inematds/treinador-carisma
 cd treinador-carisma
 deploy/iniciar.sh            # se abre en http://127.0.0.1:8787
 ```
-Requisitos: Python 3 y al menos un motor (Ollama con un modelo de 8B o más, o Codex/Claude CLI autenticado). Voz opcional: `TC_INSTALAR_VOZ=1 deploy/iniciar.sh` y `piper` con una voz pt_BR.
+Requisitos: Python 3 y al menos un motor (Ollama con un modelo de 8B o más, o Codex/Claude CLI autenticado). Voz opcional: `TC_INSTALAR_VOZ=1 deploy/iniciar.sh` instala faster-whisper, Kokoro y Piper (los modelos de voz se descargan en el primer uso).
 
 ## Desarrollar
 
@@ -49,7 +50,14 @@ cd ../gateway && python3 -m pytest -q
 - Escenas nuevas: un YAML en `cenas/<modo>/<competencia>/` (formato en `CONTRATOS.md`, en portugués).
 - Prompts: `prompts/`.
 - Rostros: `app/src/rostos/catalogo.ts`.
-- Plan completo, con las próximas fases (conversación por voz en tiempo real y avatar en tiempo real): `PLANO.md` (en portugués).
+- Plan completo: `PLANO.md` (en portugués).
+
+## Fases
+
+- **Fase 1 ✓ (1.0.0)**: base completa en las dos ediciones — dos modos, 4 entrenadores, 16 escenas, evaluador calibrado, texto y voz por turnos.
+- **Fase 2 ✓ (1.1.0)**: conversación natural — manos libres, respuesta hablada frase por frase, interrupción, pausa automática, voz femenina local y métricas de habla. Cerca de 1,3 s desde el final de tu habla hasta la voz del personaje con Ollama local (sin contar el instante de silencio que marca el final de tu turno).
+- **Fase 3 (roadmap)**: rostro — avatar 3D con la boca sincronizada con el habla; voz y rostro propios por personaje.
+- **Fase 4 (roadmap)**: avatar en tiempo real — un rostro realista hablando en vivo (servicio de avatar en la Nube, o modelo en la tarjeta de video en la Edición Local).
 
 ## Licencia
 

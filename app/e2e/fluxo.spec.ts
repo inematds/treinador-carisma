@@ -71,3 +71,22 @@ test('configuração mostra os motores da Edição Nuvem', async ({ page }) => {
   await page.getByRole('button', { name: /OpenRouter/ }).click();
   await expect(page.getByRole('button', { name: 'Entrar com OpenRouter' })).toBeVisible();
 });
+
+test('pausa automática: fala grosseira derruba a paciência e o treinador entra sozinho', async ({ page }) => {
+  await page.goto('?motor=fake');
+  await page.getByRole('button', { name: /Carisma/ }).first().click();
+  await page.getByRole('button', { name: /Ricardo Alves/ }).click();
+  await page.getByRole('button', { name: /Começar o treino/ }).click();
+  await page.getByLabel('Sua fala').fill('Quero treinar conversa difícil');
+  await page.getByLabel('Sua fala').press('Enter');
+  await page.getByRole('button', { name: /Ensaiar:/ }).click();
+  await page.getByRole('button', { name: /Entrar na cena/ }).click();
+  const fala = page.getByLabel('Sua fala');
+  await fala.fill('Bom dia, podemos conversar?');
+  await fala.press('Enter');
+  await expect(page.locator('.balao.personagem').last()).toBeVisible();
+  await fala.fill('Tanto faz, cala a boca.');
+  await fala.press('Enter');
+  await expect(page.getByTestId('correcao')).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('.legenda').first()).toContainText('Pausa: a paciência está acabando');
+});

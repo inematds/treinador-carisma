@@ -36,6 +36,12 @@ export interface Metricas {
   perguntas_abertas: number;
   vicios: Record<string, number>;
   palavras_min: number | null; // só com voz
+  /** segundos, em média, entre o personagem terminar e você começar (só no mãos-livres) */
+  tempo_resposta_s: number | null;
+  /** vezes que você cortou o personagem */
+  interrupcoes: number;
+  /** pausas no meio das suas falas (hesitação) */
+  pausas: number;
 }
 
 export function metricas(falas: Fala[]): Metricas {
@@ -55,6 +61,7 @@ export function metricas(falas: Fala[]): Metricas {
   const comVoz = minhas.filter((f) => f.voz && f.voz.duracao_s > 0.5);
   const seg = comVoz.reduce((s, f) => s + f.voz!.duracao_s, 0);
   const palVoz = comVoz.reduce((s, f) => s + palavras(f.texto).length, 0);
+  const resp = minhas.map((f) => f.voz?.tempo_resposta_s).filter((x): x is number => typeof x === 'number' && x >= 0);
   return {
     falas: minhas.length,
     palavras_por_fala: minhas.length ? Math.round(pm / minhas.length) : 0,
@@ -63,5 +70,8 @@ export function metricas(falas: Fala[]): Metricas {
     perguntas_abertas: qa,
     vicios,
     palavras_min: seg > 0 ? Math.round((palVoz / seg) * 60) : null,
+    tempo_resposta_s: resp.length ? Math.round((resp.reduce((a, b) => a + b, 0) / resp.length) * 10) / 10 : null,
+    interrupcoes: outras.filter((f) => f.interrompida).length,
+    pausas: comVoz.reduce((s, f) => s + (f.voz!.pausas ?? 0), 0),
   };
 }

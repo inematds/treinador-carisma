@@ -1,0 +1,15 @@
+{
+  "quando": "2026-10-08T15:52:34.943Z",
+  "modelo": "qwen3:30b",
+  "latencias_ms": [
+    7067,
+    7674
+  ],
+  "transcricao": [
+    "MARCOS: Fala. Se é sobre hoje cedo, o trânsito estava um caos, tá?",
+    "VOCÊ: Oi Marcos, posso falar com você um minuto sobre os horários das reuniões.",
+    "MARCOS: Ah, é isso? O trânsito tá um caos há semanas, eu já expliquei isso. Não tô atrasado, tô preso no trânsito.",
+    "VOCÊ: Oi Marcos, posso falar com você um minuto sobre os horários das reuniões.",
+    "MARCOS: Ah, tá. A gente já passou disso. Já expliquei, tá na minha cara que o trânsito é um caos. Fica repetindo a mesma coisa, não? A gente tem que resolver isso aqui na hora, não é?"
+  ]
+}

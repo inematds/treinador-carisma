@@ -162,6 +162,14 @@ export function ConfigModal({ config, saude, aoSalvar, aoFechar }: Props) {
             <input type="checkbox" style={{ width: 'auto' }} checked={c.vozAuto} onChange={(e) => setC({ ...c, vozAuto: e.target.checked })} />
             Falar as respostas em voz alta
           </label>
+          <label className="linha">
+            <input type="checkbox" style={{ width: 'auto' }} checked={c.maosLivres} onChange={(e) => setC({ ...c, maosLivres: e.target.checked })} />
+            Conversa contínua (microfone aberto, sem botão)
+          </label>
+          <label className="linha">
+            <input type="checkbox" style={{ width: 'auto' }} checked={c.pausaAuto} onChange={(e) => setC({ ...c, pausaAuto: e.target.checked })} />
+            O treinador pausa sozinho quando a conversa desanda
+          </label>
         </div>
 
         {msg && <p className="erro">{msg}</p>}

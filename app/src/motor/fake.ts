@@ -18,21 +18,36 @@ export function motorFake(atrasoMs = 0): Motor {
     id: 'fake',
     rotulo: 'Demonstração (respostas simuladas)',
     externo: false,
-    async *chat(msgs) {
+    async *chat(msgs, o = {}) {
       if (atrasoMs) await new Promise((r) => setTimeout(r, atrasoMs));
       const p = papel(msgs);
       const ultimo = msgs[msgs.length - 1]?.content ?? '';
       if (p === 'personagem') {
         const n = (ultimo.match(/\(USUÁRIO\)/g) ?? []).length;
-        const fim = n >= 3;
-        const v = Math.min(10, 3 + n * 2);
-        yield JSON.stringify({
-          fala: FALAS[Math.min(n - 1, FALAS.length - 1)] ?? FALAS[0],
-          estado: { abertura: v, paciencia: 6, confianca: v },
-          expressao: v >= 7 ? 'sorrindo' : 'neutro',
+        // fala grosseira derruba a paciência (para testar a pausa automática)
+        const ultimaDoUsuario = [...ultimo.matchAll(/fala \d+ \(USUÁRIO\): (.*)/g)].pop()?.[1] ?? '';
+        const grosseiro = /grosso|cala a boca|tanto faz|não ligo/i.test(ultimaDoUsuario);
+        // "conta mais" pede uma resposta longa (para testar a interrupção por voz)
+        const longa = /conta mais/i.test(ultimaDoUsuario);
+        const fim = n >= 3 && !grosseiro && !longa;
+        const v = grosseiro ? 2 : Math.min(10, 3 + n * 2);
+        const json = JSON.stringify({
+          fala: grosseiro
+            ? 'Nossa. Assim fica difícil conversar.'
+            : longa
+              ? 'Então, deixa eu te explicar com calma. Isso começou no ano passado, quando mudaram a equipe inteira. Desde então cada reunião vira uma discussão longa sobre prioridades. E ninguém decide nada de verdade no final.'
+              : (FALAS[Math.min(n - 1, FALAS.length - 1)] ?? FALAS[0]),
+          estado: { abertura: v, paciencia: grosseiro ? 2 : 6, confianca: v },
+          expressao: grosseiro ? 'irritado' : v >= 7 ? 'sorrindo' : 'neutro',
           fim,
           resultado: fim ? 'sucesso' : null,
         });
+        // em pedaços, como um modelo de verdade em streaming
+        for (let i = 0; i < json.length; i += 7) {
+          if (o.signal?.aborted) return;
+          yield json.slice(i, i + 7);
+          if (atrasoMs) await new Promise((r) => setTimeout(r, 15));
+        }
         return;
       }
       if (p === 'avaliador') {

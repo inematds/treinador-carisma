@@ -94,7 +94,7 @@
   .ex figcaption{padding:12px 14px;font-size:.88rem;color:var(--mut);background:var(--card)}
   .phase{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
   .phase:last-child{border:none}
-  .phase .tag{flex:0 0 92px;font-family:Sora;font-weight:800;color:var(--amb)}
+  .phase .tag{flex:0 0 118px;font-family:Sora;font-weight:800;color:var(--amb)}
   .phase .d strong{display:block;margin-bottom:.2em}
   .phase .d span{color:var(--mut);font-size:.92rem}
   footer{padding:46px 0;text-align:center;color:var(--mut);font-size:.9rem}
@@ -187,8 +187,8 @@
   <h2>Sem servidor ou no seu PC</h2>
   <p class="sub">É o mesmo app nas duas edições. Muda só de onde vem a IA e a voz. O que melhora no núcleo vale para as duas.</p>
   <div class="grid g2">
-    <div class="card"><h3>☁️ Edição Nuvem</h3><p>Abre pelo link, sem instalar nada. A IA vem de: um modelo pequeno rodando no próprio navegador (grátis, precisa de placa de vídeo com WebGPU), o login com a sua conta OpenRouter, a sua chave da OpenAI ou da Anthropic, ou o Ollama do seu PC. As chaves ficam só no seu navegador. A voz é a do navegador.</p></div>
-    <div class="card"><h3>🖥️ Edição Local</h3><p>Roda no seu PC (ou numa VPS) com <code>deploy/iniciar.sh</code>. A IA pode ser o Ollama, sem API e sem internet, ou a sua assinatura do ChatGPT (Codex), do Claude ou do Gemini, usando as ferramentas de linha de comando já logadas. A voz roda local: Whisper para ouvir, Piper para falar.</p></div>
+    <div class="card"><h3>☁️ Edição Nuvem</h3><p>Abre pelo link, sem instalar nada. A IA vem de: um modelo pequeno rodando no próprio navegador (grátis, precisa de placa de vídeo com WebGPU), o login com a sua conta OpenRouter, a sua chave da OpenAI ou da Anthropic, ou o Ollama do seu PC. As chaves ficam só no seu navegador. A voz é a do navegador; na conversa contínua o microfone pausa enquanto o personagem fala.</p></div>
+    <div class="card"><h3>🖥️ Edição Local</h3><p>Roda no seu PC (ou numa VPS) com <code>deploy/iniciar.sh</code>. A IA pode ser o Ollama, sem API e sem internet, ou a sua assinatura do ChatGPT (Codex), do Claude ou do Gemini, usando as ferramentas de linha de comando já logadas. A voz roda local: Whisper para ouvir, Kokoro (voz feminina e masculina) ou Piper para falar. Na conversa contínua você pode interromper o personagem falando por cima.</p></div>
   </div>
 </div></section>
 
@@ -202,7 +202,7 @@
     <div class="card"><h3>Um motor de IA</h3><p>O Ollama com um modelo de 8B ou mais, ou o Codex/Claude CLI logado com a sua assinatura.</p><pre><span class="k">ollama</span> pull qwen3:30b
 <span class="c"># ou</span>
 <span class="k">codex</span> login</pre></div>
-    <div class="card"><h3>Voz (opcional)</h3><p>Whisper para ouvir e Piper com uma voz pt_BR para falar. Sem eles, o app usa a voz do navegador.</p><pre><span class="k">TC_INSTALAR_VOZ=1</span> deploy/iniciar.sh</pre></div>
+    <div class="card"><h3>Voz (opcional)</h3><p>Whisper para ouvir e Kokoro ou Piper para falar (o Kokoro tem voz feminina em português). Os modelos de voz baixam no primeiro uso. Sem eles, o app usa a voz do navegador.</p><pre><span class="k">TC_INSTALAR_VOZ=1</span> deploy/iniciar.sh</pre></div>
   </div>
 </div></section>
 
@@ -241,7 +241,7 @@
 
   <div class="step"><div class="b">5</div><div>
     <h3>Ensaie, peça a pausa e refaça</h3>
-    <p>Fale pelo microfone ou digite. A cena termina sozinha (sucesso, fracasso ou limite de falas), ou você clica em "Pausa: me avalie". Leia a correção, clique em "Refazer a cena" e compare as notas.</p>
+    <p>Fale pelo microfone ou digite. Marque "Conversa contínua (mãos-livres)" para conversar sem botão: o microfone fica aberto, sua vez termina depois de um instante de silêncio e o personagem responde em voz, frase a frase. Na Edição Local, falar por cima interrompe o personagem. A cena termina sozinha (sucesso, fracasso ou limite de falas), o(a) treinador(a) pausa sozinho(a) quando a conversa desanda, ou você clica em "Pausa: me avalie". Leia a correção, clique em "Refazer a cena" e compare as notas.</p>
   </div></div>
 
   <div class="step"><div class="b">6</div><div>
@@ -275,14 +275,14 @@
   <h2>Até conversar com um avatar em tempo real</h2>
   <p class="sub">Cada fase sai nas duas edições ao mesmo tempo. O plano completo está no <a href="https://github.com/inematds/treinador-carisma/blob/main/PLANO.md">PLANO.md</a>.</p>
   <div class="phase"><div class="tag">Fase 1 ✓</div><div class="d"><strong>Base completa (v1.0.0)</strong><span>Os dois modos, os 4 treinadores, 16 cenas, avaliador calibrado, texto e voz em turnos, Edição Nuvem e Edição Local.</span></div></div>
-  <div class="phase"><div class="tag">Fase 2</div><div class="d"><strong>Conversa natural</strong><span>Voz contínua, sem botão, interrompível, com resposta em menos de 1,5 s, pausa automática quando o avaliador vê um erro grave e métricas de fala mais finas.</span></div></div>
-  <div class="phase"><div class="tag">Fase 3</div><div class="d"><strong>Rosto</strong><span>Dos rostos ilustrados atuais para um avatar 3D com a boca sincronizada à fala.</span></div></div>
-  <div class="phase"><div class="tag">Fase 4</div><div class="d"><strong>Avatar em tempo real</strong><span>Rosto realista falando com você ao vivo: por serviço de avatar na Nuvem, ou por modelo na placa de vídeo na Edição Local.</span></div></div>
+  <div class="phase"><div class="tag">Fase 2 ✓</div><div class="d"><strong>Conversa natural (v1.1.0)</strong><span>Conversa contínua sem botão, resposta falada frase a frase enquanto a IA ainda escreve, interrupção falando por cima (Edição Local), pausa automática quando a conversa desanda, voz feminina local (Kokoro) e métricas de tempo de resposta, pausas e interrupções. Medido no Ollama local: cerca de 1,3 s do fim da sua fala à voz do personagem, sem contar o instante de silêncio que marca o fim da sua vez.</span></div></div>
+  <div class="phase"><div class="tag">Fase 3 · roadmap</div><div class="d"><strong>Rosto</strong><span>Dos rostos ilustrados atuais para um avatar 3D com a boca sincronizada à fala.</span></div></div>
+  <div class="phase"><div class="tag">Fase 4 · roadmap</div><div class="d"><strong>Avatar em tempo real</strong><span>Rosto realista falando com você ao vivo: por serviço de avatar na Nuvem, ou por modelo na placa de vídeo na Edição Local.</span></div></div>
 </div></section>
 
 <footer>
   <div class="wrap">
-    <div class="pill">React + Vite</div><div class="pill">FastAPI</div><div class="pill">Ollama · Codex · Claude · Gemini</div><div class="pill">Whisper + Piper</div><div class="pill">MIT</div>
+    <div class="pill">React + Vite</div><div class="pill">FastAPI</div><div class="pill">Ollama · Codex · Claude · Gemini</div><div class="pill">Whisper + Kokoro + Piper</div><div class="pill">MIT</div>
     <p style="margin-top:18px">Treinador de Carisma · código aberto, copie e ajuste à vontade ·
       <a href="https://github.com/inematds/treinador-carisma">inematds/treinador-carisma</a> ·
       <a href="https://inema.club">INEMA.CLUB</a></p>

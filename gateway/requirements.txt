@@ -6,7 +6,9 @@ python-multipart>=0.0.9
 # Testes (só para desenvolvimento): pip install pytest
 
 # Opcionais (voz -> texto). Instale UM deles para habilitar /api/stt:
-# faster-whisper>=1.0
-# openai-whisper
-# Texto -> voz (/api/tts): binário piper + voz .onnx em ~/.local/share/piper
-# piper-tts
+# faster-whisper>=1.0     (CPU; rápido o bastante com o modelo base)
+# openai-whisper          (usado na GPU quando houver CUDA)
+# Texto -> voz (/api/tts):
+# kokoro>=0.9             (voz feminina e masculina em português; baixa o modelo no 1º uso)
+# piper-tts               (voz .onnx em ~/.local/share/piper; só masculina em pt_BR)
+# chatterbox: opcional, no ambiente próprio dele (TC_CHATTERBOX_PY) + seu WAV de referência

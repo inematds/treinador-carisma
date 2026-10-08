@@ -33,7 +33,7 @@ def test_health_formato(cliente, monkeypatch):
     r = cliente.get("/api/health")
     assert r.status_code == 200
     d = r.json()
-    assert d["ok"] is True and d["versao"] == "1.0.0" and d["edicao"] == "local"
+    assert d["ok"] is True and d["versao"] == gw.VERSAO and d["edicao"] == "local"
     assert d["motores"]["ollama"] == {"ok": True, "modelos": ["llama3.2:latest"]}
     assert d["motores"]["codex"] == {"ok": True}
     assert d["motores"]["claude"] == {"ok": True}
@@ -271,3 +271,99 @@ def test_stt_real_ida_e_volta(cliente):
     d = r.json()
     assert "tudo bem" in d["texto"].lower()
     assert d["palavras"] and {"w", "ini", "fim"} <= set(d["palavras"][0])
+
+
+# ---------------------------------------------------------------- Fase 2: vozes, STT rápido, alucinações
+
+@pytest.mark.parametrize("voz,esperado", [
+    ("pt_BR-faber-medium", ("piper", "pt_BR-faber-medium")),
+    ("piper:pt_BR-faber-medium", ("piper", "pt_BR-faber-medium")),
+    ("kokoro:pf_dora", ("kokoro", "pf_dora")),
+    ("chatterbox:executiva", ("chatterbox", "executiva")),
+])
+def test_separar_voz(voz, esperado):
+    assert gw.separar_voz(voz) == esperado
+
+
+@pytest.mark.parametrize("voz", ["edge:x", "kokoro:../a", "kokoro:", "x:y:z/w"])
+def test_separar_voz_invalida(voz):
+    with pytest.raises(gw.GatewayErro) as e:
+        gw.separar_voz(voz)
+    assert e.value.status == 400
+
+
+def test_tts_velocidade_fora_do_limite_422(cliente):
+    assert cliente.post("/api/tts", json={"texto": "oi", "velocidade": 3}).status_code == 422
+
+
+def test_tts_encaminha_engine_voz_e_velocidade(cliente, monkeypatch):
+    pedidos = []
+
+    async def falsa(engine, nome, texto, vel):
+        pedidos.append((engine, nome, texto, vel))
+        return b"RIFF....WAVE"
+
+    monkeypatch.setattr(gw, "sintetizar", falsa)
+    r = cliente.post("/api/tts", json={"texto": " Olá ", "voz": "kokoro:pm_alex", "velocidade": 1.1})
+    assert r.status_code == 200 and r.headers["content-type"] == "audio/wav"
+    assert pedidos == [("kokoro", "pm_alex", "Olá", 1.1)]
+
+
+def test_tts_chatterbox_desligado_503(cliente, monkeypatch, tmp_path):
+    monkeypatch.delenv("TC_CHATTERBOX_PY", raising=False)
+    monkeypatch.setenv("TC_VOZES_DIR", str(tmp_path))
+    (tmp_path / "executiva.wav").write_bytes(b"RIFF")
+    r = cliente.post("/api/tts", json={"texto": "oi", "voz": "chatterbox:executiva"})
+    assert r.status_code == 503
+    r = cliente.post("/api/tts", json={"texto": "oi", "voz": "chatterbox:ninguem"})
+    assert r.status_code == 503 and "referência" in r.json()["erro"]
+
+
+def test_health_lista_engines_de_voz(cliente):
+    d = cliente.get("/api/health").json()
+    assert set(d["tts"]["engines"]) == {"piper", "kokoro", "chatterbox"}
+    if d["tts"]["engines"]["kokoro"]["ok"]:
+        assert "pf_dora" in d["tts"]["engines"]["kokoro"]["vozes"]
+
+
+def test_escolher_stt_respeita_env(monkeypatch):
+    monkeypatch.setenv("TC_STT", "nao-existe")
+    monkeypatch.setattr(gw, "_tem", lambda m: m == "faster_whisper")
+    assert gw.escolher_stt() == "faster_whisper"
+    monkeypatch.setenv("TC_STT", "whisper")
+    assert gw.escolher_stt() is None  # pedido explícito de engine ausente
+
+
+def test_stt_sem_palavras_repassa_flag(cliente, monkeypatch):
+    visto = {}
+
+    def falso(wav, com_palavras=True):
+        visto["palavras"] = com_palavras
+        return {"texto": "oi", "palavras": [], "duracao_audio": 1.0}
+
+    async def conv(o, d):
+        Path(d).write_bytes(b"x")
+
+    monkeypatch.setattr(gw, "detectar_stt", lambda: {"ok": True, "engine": "whisper"})
+    monkeypatch.setattr(gw, "converter_wav", conv)
+    monkeypatch.setattr(gw, "_transcrever", falso)
+    r = cliente.post("/api/stt", files={"audio": ("a.wav", b"RIFF", "audio/wav")}, data={"palavras": "false"})
+    assert r.status_code == 200 and visto["palavras"] is False
+
+
+@pytest.mark.parametrize("texto,rms,esperado", [
+    ("Obrigado.", 0.05, ""),
+    ("Legendas pela comunidade Amara.org", 0.05, ""),
+    ("Obrigado pela reunião de ontem.", 0.05, "Obrigado pela reunião de ontem."),
+    ("E aí? Tudo certo?", 0.05, "E aí? Tudo certo?"),
+    ("Qualquer coisa", 0.001, ""),
+])
+def test_limpar_transcricao(texto, rms, esperado):
+    assert gw.limpar_transcricao(texto, rms) == esperado
+
+
+@pytest.mark.skipif(not gw._tem("kokoro"), reason="kokoro não instalado")
+def test_tts_kokoro_real_voz_feminina(cliente):
+    r = cliente.post("/api/tts", json={"texto": "Oi, tudo bem?", "voz": "kokoro:pf_dora"})
+    assert r.status_code == 200
+    assert r.content[:4] == b"RIFF" and len(r.content) > 10000

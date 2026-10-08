@@ -1,8 +1,9 @@
 // Máquina de estados de uma cena: briefing → cena → avaliando → correção → (refazer) …
 import { juntar, type Motor } from '../motor/tipos';
 import type { Alvo, Avaliacao, Cena, EstadoPersonagem, Fala, SaidaPersonagem, Tentativa } from '../tipos';
+import { DivisorFrases, LeitorFala } from './fluxo';
 import { identidade, msgsAvaliador, msgsPersonagem } from './prompts';
-import { expressaoDoEstado, extrairJson, validarAvaliacao, validarPersonagem } from './validar';
+import { conexao, expressaoDoEstado, extrairJson, validarAvaliacao, validarPersonagem } from './validar';
 
 export type Fase = 'briefing' | 'cena' | 'avaliando' | 'correcao';
 
@@ -33,6 +34,8 @@ export class Sessao {
   fase: Fase = 'briefing';
   tentativas: Tentativa[] = [];
   estado: EstadoPersonagem;
+  /** estado antes da última resposta (para a pausa automática ver a queda) */
+  anterior: EstadoPersonagem;
   erro: string | null = null;
 
   constructor(
@@ -41,6 +44,7 @@ export class Sessao {
     public motor: Motor,
   ) {
     this.estado = { ...cena.personagem.estado_inicial };
+    this.anterior = this.estado;
     this.novaTentativa();
   }
 
@@ -59,6 +63,7 @@ export class Sessao {
 
   private novaTentativa() {
     this.estado = { ...this.cena.personagem.estado_inicial };
+    this.anterior = this.estado;
     const falas: Fala[] = [];
     const abertura = this.cena.abertura_personagem?.trim();
     if (abertura) falas.push({ quem: 'personagem', texto: abertura, estado: { ...this.estado }, expressao: expressaoDoEstado(this.estado) });
@@ -72,24 +77,112 @@ export class Sessao {
 
   /** O usuário fala; o personagem responde. */
   async falar(texto: string, voz?: Fala['voz']): Promise<SaidaPersonagem> {
-    if (this.fase !== 'cena') throw new Error('a cena não está em andamento');
-    const t = texto.trim();
-    if (!t) throw new Error('fala vazia');
-    this.atual.falas.push({ quem: 'voce', texto: t, voz });
+    this.registrarUsuario(texto, voz);
     const saida = await pedirJson(
       this.motor,
       msgsPersonagem(this.cena, this.alvo, this.atual.falas, this.estado),
       (b) => validarPersonagem(b, this.estado),
       0.8,
     );
+    return this.registrarPersonagem(saida);
+  }
+
+  /**
+   * Como `falar`, mas em streaming: cada frase da resposta sai por `aoFrase` assim que fica pronta
+   * (a voz começa antes do modelo terminar). Se `signal` abortar (você interrompeu), guarda o que
+   * já tinha saído como fala interrompida e devolve null.
+   */
+  async falarStream(texto: string, voz: Fala['voz'] | undefined, aoFrase: (f: string) => void, signal?: AbortSignal): Promise<SaidaPersonagem | null> {
+    this.registrarUsuario(texto, voz);
+    const msgs = msgsPersonagem(this.cena, this.alvo, this.atual.falas, this.estado);
+    const leitor = new LeitorFala();
+    const div = new DivisorFrases();
+    let dito = '';
+    const emitir = (fs: string[]) =>
+      fs.forEach((f) => {
+        dito += (dito ? ' ' : '') + f;
+        aoFrase(f);
+      });
+    try {
+      for await (const pedaco of this.motor.chat(msgs, { json: true, temperatura: 0.8, signal })) {
+        if (signal?.aborted) break;
+        emitir(div.adicionar(leitor.adicionar(pedaco)));
+      }
+    } catch (e) {
+      if (!signal?.aborted) {
+        if (dito) return this.registrarPersonagem(this.saidaParcial(dito));
+        this.atual.falas.pop();
+        throw e;
+      }
+    }
+    if (signal?.aborted) {
+      if (dito) {
+        this.atual.falas.push({ quem: 'personagem', texto: dito, estado: { ...this.estado }, expressao: expressaoDoEstado(this.estado), interrompida: true });
+      }
+      return null;
+    }
+    emitir(div.fechar());
+    let saida: SaidaPersonagem;
+    try {
+      saida = validarPersonagem(extrairJson(leitor.json), this.estado);
+      if (dito) saida.fala = dito; // o que foi dito em voz é o que vale na transcrição
+    } catch {
+      if (dito) saida = this.saidaParcial(dito);
+      else {
+        // JSON inválido antes de qualquer frase: uma tentativa normal (sem streaming)
+        saida = await pedirJson(this.motor, msgs, (b) => validarPersonagem(b, this.estado), 0.8);
+        const d = new DivisorFrases();
+        emitir([...d.adicionar(saida.fala + ' '), ...d.fechar()]);
+      }
+    }
+    return this.registrarPersonagem(saida);
+  }
+
+  private saidaParcial(fala: string): SaidaPersonagem {
+    return { fala, estado: { ...this.estado }, expressao: expressaoDoEstado(this.estado), fim: false, resultado: null };
+  }
+
+  private registrarUsuario(texto: string, voz?: Fala['voz']) {
+    if (this.fase !== 'cena') throw new Error('a cena não está em andamento');
+    const t = texto.trim();
+    if (!t) throw new Error('fala vazia');
+    this.atual.falas.push({ quem: 'voce', texto: t, voz });
+  }
+
+  private registrarPersonagem(saida: SaidaPersonagem): SaidaPersonagem {
     if (this.falasUsuario >= this.cena.fim.max_falas && !saida.fim) {
       saida.fim = true;
       saida.resultado = 'neutro';
     }
+    this.anterior = this.estado;
     this.estado = saida.estado;
     this.atual.falas.push({ quem: 'personagem', texto: saida.fala, estado: { ...saida.estado }, expressao: saida.expressao });
     if (saida.fim) this.atual.resultado = saida.resultado ?? 'neutro';
     return saida;
+  }
+
+  /**
+   * Você começou a falar enquanto o personagem falava: marca a última fala dele como interrompida
+   * e, se souber, guarda só o que chegou a ser dito (é isso que ele "lembra" ter falado).
+   */
+  marcarInterrupcao(dito?: string) {
+    const ultima = this.atual.falas[this.atual.falas.length - 1];
+    if (ultima?.quem !== 'personagem') return;
+    ultima.interrompida = true;
+    const d = dito?.trim();
+    if (d && d.length < ultima.texto.length) ultima.texto = `${d}…`;
+  }
+
+  /**
+   * Pausa automática: o treinador entra quando a conversa está desandando
+   * (paciência no fim ou conexão caindo forte numa fala só). Devolve o motivo ou null.
+   */
+  alertaPausa(): string | null {
+    if (this.fase !== 'cena' || this.atual.resultado !== null) return null;
+    if (this.estado.paciencia <= 2) return 'a paciência está acabando';
+    const queda = conexao(this.anterior) - conexao(this.estado);
+    if (queda >= 20) return `a conexão caiu ${queda} pontos nessa fala`;
+    return null;
   }
 
   /** Pausa (a pedido ou no fim) e chama o avaliador. */

@@ -55,7 +55,9 @@ export interface Fala {
   estado?: EstadoPersonagem;
   expressao?: Expressao;
   /** métricas de voz da fala, quando veio do microfone */
-  voz?: { duracao_s: number; palavras_min?: number; pausas?: number };
+  voz?: { duracao_s: number; palavras_min?: number; pausas?: number; tempo_resposta_s?: number };
+  /** fala do personagem cortada porque você começou a falar */
+  interrompida?: boolean;
 }
 
 export interface SaidaPersonagem {

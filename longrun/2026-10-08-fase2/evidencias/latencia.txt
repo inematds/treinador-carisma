@@ -1,0 +1,21 @@
+
+✓ escuta-colega              total 1399 ms  (stt 440 · modelo 749 · voz 211)  "Ah, deixa pra lá..."
+✗ networking-evento          total 1677 ms  (stt 831 · modelo 692 · voz 154)  "Só falei que é um problema de atendimento,"
+✗ explicar-atraso-projeto    total 7310 ms  (stt 432 · modelo 6796 · voz 82)  "Entendi."
+✗ historia-entrevista        total 1598 ms  (stt 376 · modelo 1077 · voz 145)  "Certo, mas por que você não optou por esperar mais"
+✓ apresentacao-cliente       total 1156 ms  (stt 344 · modelo 705 · voz 108)  "Reduzir 12%?"
+✓ feedback-atraso            total 1187 ms  (stt 225 · modelo 875 · voz 86)  "Trânsito é trânsito, cara."
+✓ pitch-elevador             total 1100 ms  (stt 332 · modelo 679 · voz 90)  "Quantas filas testou?"
+✓ dizer-nao                  total 1352 ms  (stt 522 · modelo 718 · voz 112)  "Tá."
+✓ interromper-reuniao        total 1336 ms  (stt 493 · modelo 709 · voz 134)  "Ah, claro!"
+✗ primeira-reuniao           total 1786 ms  (stt 457 · modelo 1169 · voz 160)  "Então você vai fazer uma rodada de *conversa*?"
+✓ cafe-abertura              total 861 ms  (stt 184 · modelo 564 · voz 113)  "Deserto é mais..."
+✓ mensagem-reconexao         total 1143 ms  (stt 370 · modelo 649 · voz 123)  "Eita, achei que você tinha sumido."
+✓ convite-encontro           total 1049 ms  (stt 290 · modelo 653 · voz 107)  "Ah, o Perú no Petisco?"
+✓ evento-flerte              total 1128 ms  (stt 283 · modelo 745 · voz 99)  "Ah, você lê só a orelha?"
+✓ sinais-mistos              total 1397 ms  (stt 243 · modelo 1018 · voz 136)  "Haha, não é isso, só tava pensando no que fazer de"
+✓ lidar-recusa               total 1240 ms  (stt 309 · modelo 807 · voz 125)  "Hah, não tem problema!"
+
+p50 1336 ms · p95 7310 ms · médias: stt 383 · modelo 1163 · voz 124
+(fora da conta: a espera de 700 ms de silêncio que marca o fim da sua fala)
+OK: p50 abaixo de 1500 ms

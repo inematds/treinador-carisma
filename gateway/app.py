@@ -19,7 +19,7 @@ from typing import AsyncIterator, Optional
 from urllib.parse import urlsplit
 
 import httpx
-from fastapi import FastAPI, File, Request, UploadFile
+from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.concurrency import run_in_threadpool
@@ -29,6 +29,7 @@ from versao import VERSAO
 AQUI = Path(__file__).resolve().parent
 TIMEOUT_CLI = 120.0
 TIMEOUT_TTS = 60.0
+TIMEOUT_CHATTERBOX = 90.0
 CACHE_HEALTH_S = 30.0
 MOTORES = ("ollama", "codex", "claude", "gemini")
 
@@ -49,6 +50,17 @@ def static_dir() -> Path:
 
 def whisper_modelo() -> str:
     return os.environ.get("TC_WHISPER", "small")
+
+
+def vozes_dir() -> Path:
+    """WAVs de referência do chatterbox (um por treinador: <id>.wav). Nenhum vem no repositório."""
+    return Path(os.environ.get("TC_VOZES_DIR", str(Path.home() / ".local/share/treinador-carisma/vozes"))).expanduser()
+
+
+def chatterbox_py() -> Optional[str]:
+    """Python do ambiente onde o chatterbox está instalado (TC_CHATTERBOX_PY). Sem ele, chatterbox fica desligado."""
+    py = os.environ.get("TC_CHATTERBOX_PY", "")
+    return py if py and Path(py).is_file() else None
 
 
 def achar_bin(nome: str) -> Optional[str]:
@@ -138,12 +150,40 @@ async def detectar_bin(nome: str) -> dict:
     return {"ok": achar_bin(nome) is not None}
 
 
+def _tem(modulo: str) -> bool:
+    try:
+        return importlib.util.find_spec(modulo) is not None
+    except (ImportError, ValueError):
+        return False
+
+
+def _cuda() -> bool:
+    if not _tem("torch"):
+        return False
+    try:
+        import torch
+        return bool(torch.cuda.is_available())
+    except Exception:
+        return False
+
+
+def escolher_stt() -> Optional[str]:
+    """TC_STT=whisper|faster_whisper força; auto: whisper na GPU, senão faster-whisper (CPU), senão whisper."""
+    pedido = os.environ.get("TC_STT", "auto")
+    if pedido in ("whisper", "faster_whisper"):
+        return pedido if _tem(pedido) else None
+    if _tem("whisper") and _cuda():
+        return "whisper"
+    if _tem("faster_whisper"):
+        return "faster_whisper"
+    if _tem("whisper"):
+        return "whisper"
+    return None
+
+
 def detectar_stt() -> dict:
-    if importlib.util.find_spec("faster_whisper") is not None:
-        return {"ok": True, "engine": "faster_whisper"}
-    if importlib.util.find_spec("whisper") is not None:
-        return {"ok": True, "engine": "whisper"}
-    return {"ok": False, "engine": None}
+    engine = escolher_stt()
+    return {"ok": engine is not None, "engine": engine}
 
 
 def listar_vozes() -> list:
@@ -153,10 +193,26 @@ def listar_vozes() -> list:
     return sorted(p.stem for p in d.glob("*.onnx"))
 
 
+KOKORO_VOZES = ["pf_dora", "pm_alex", "pm_santa"]  # português do Brasil no Kokoro-82M
+
+
+def refs_chatterbox() -> list:
+    d = vozes_dir()
+    return sorted(p.stem for p in d.glob("*.wav")) if d.is_dir() else []
+
+
 def detectar_tts() -> dict:
     vozes = listar_vozes()
-    ok = achar_bin("piper") is not None and bool(vozes)
-    return {"ok": ok, "engine": "piper" if ok else None, "vozes": vozes}
+    piper_ok = (achar_bin("piper") is not None or _tem("piper")) and bool(vozes)
+    kokoro_ok = _tem("kokoro")
+    cb_ok = chatterbox_py() is not None and bool(refs_chatterbox())
+    engines = {
+        "piper": {"ok": piper_ok, "vozes": vozes},
+        "kokoro": {"ok": kokoro_ok, "vozes": KOKORO_VOZES if kokoro_ok else []},
+        "chatterbox": {"ok": cb_ok, "vozes": refs_chatterbox() if cb_ok else []},
+    }
+    principal = "kokoro" if kokoro_ok else ("piper" if piper_ok else None)
+    return {"ok": principal is not None, "engine": principal, "vozes": vozes, "engines": engines}
 
 
 async def _com_teto(coro, padrao: dict, teto: float) -> dict:
@@ -240,6 +296,8 @@ async def gerar_ollama(pedido: PedidoChat) -> AsyncIterator[str]:
                     "messages": [m.model_dump() for m in pedido.mensagens],
                     "stream": True,
                     "think": pedido.pensar,
+                    # mantém o modelo carregado entre as falas (recarregar custa segundos)
+                    "keep_alive": os.environ.get("TC_OLLAMA_KEEP_ALIVE", "30m"),
                     "options": {"temperature": pedido.temperatura},
                 }
                 if pedido.json_:
@@ -359,37 +417,66 @@ def _carregar_stt():
     if _stt["modelo"] is not None:
         return _stt["engine"], _stt["modelo"]
     nome = whisper_modelo()
-    if importlib.util.find_spec("faster_whisper") is not None:
+    engine = escolher_stt()
+    if engine == "whisper":
+        import whisper
+        _stt["modelo"] = whisper.load_model(nome, device="cuda" if _cuda() else "cpu")
+    elif engine == "faster_whisper":
         from faster_whisper import WhisperModel
         _stt["modelo"] = WhisperModel(nome, device="auto", compute_type="int8")
-        _stt["engine"] = "faster_whisper"
-    elif importlib.util.find_spec("whisper") is not None:
-        import whisper
-        _stt["modelo"] = whisper.load_model(nome)
-        _stt["engine"] = "whisper"
     else:
         raise GatewayErro(503, "nenhum motor de STT instalado (faster_whisper ou whisper)")
+    _stt["engine"] = engine
     return _stt["engine"], _stt["modelo"]
 
 
-def _transcrever(wav: str) -> dict:
+def _ler_audio(wav: str):
+    """WAV 16 kHz mono → float32 (passar array evita o decodificador de áudio de cada engine)."""
+    import numpy as np
+    import wave
+    with wave.open(wav, "rb") as w:
+        dados = w.readframes(w.getnframes())
+    return np.frombuffer(dados, dtype=np.int16).astype(np.float32) / 32768.0
+
+
+# Frases que o Whisper costuma inventar em silêncio/ruído (legendas de vídeos do treino dele).
+ALUCINACOES = re.compile(
+    r"^\W*(obrigad[oa]( por assistir)?|tchau|legendas? (pela|por) .*|amara\.org.*|inscreva-se.*|"
+    r"\.\.\.|hum+|ah+)\W*$", re.IGNORECASE)
+
+
+def limpar_transcricao(texto: str, rms: float) -> str:
+    """Áudio quase mudo ou frase típica de alucinação vira texto vazio."""
+    if rms < 0.004:
+        return ""
+    return "" if ALUCINACOES.match(texto.strip()) else texto.strip()
+
+
+def _transcrever(wav: str, com_palavras: bool = True) -> dict:
     engine, modelo = _carregar_stt()
+    audio = _ler_audio(wav)
+    rms = float((audio ** 2).mean() ** 0.5) if len(audio) else 0.0
     palavras = []
     if engine == "faster_whisper":
-        segmentos, _info = modelo.transcribe(wav, language="pt", word_timestamps=True)
+        segmentos, _info = modelo.transcribe(audio, language="pt", word_timestamps=com_palavras, beam_size=1)
         textos = []
         for s in segmentos:
+            if s.no_speech_prob > 0.6 and s.avg_logprob < -1.0:
+                continue
             textos.append(s.text.strip())
             for w in (s.words or []):
                 palavras.append({"w": w.word.strip(), "ini": round(w.start, 2), "fim": round(w.end, 2)})
         texto = " ".join(t for t in textos if t)
     else:
-        r = modelo.transcribe(wav, language="pt", word_timestamps=True, fp16=False)
-        texto = (r.get("text") or "").strip()
-        for s in r.get("segments", []):
+        r = modelo.transcribe(audio, language="pt", word_timestamps=com_palavras, fp16=_cuda(),
+                              condition_on_previous_text=False)
+        segs = [s for s in r.get("segments", []) if not (s.get("no_speech_prob", 0) > 0.6 and s.get("avg_logprob", 0) < -1.0)]
+        texto = " ".join(s["text"].strip() for s in segs).strip()
+        for s in segs:
             for w in s.get("words", []) or []:
                 palavras.append({"w": w["word"].strip(), "ini": round(w["start"], 2), "fim": round(w["end"], 2)})
-    return {"texto": texto, "palavras": palavras}
+    texto = limpar_transcricao(texto, rms)
+    return {"texto": texto, "palavras": palavras if texto else [], "duracao_audio": round(len(audio) / 16000, 2)}
 
 
 async def converter_wav(origem: str, destino: str) -> None:
@@ -415,17 +502,167 @@ async def converter_wav(origem: str, destino: str) -> None:
 # ---------------------------------------------------------------- TTS
 
 RE_VOZ = re.compile(r"^[A-Za-z0-9_.\-]+$")
+ENGINES_TTS = ("piper", "kokoro", "chatterbox")
 
 
 class PedidoTTS(BaseModel):
     texto: str
+    # "<engine>:<voz>" (ex.: "kokoro:pf_dora") ou só o nome de uma voz do piper
     voz: str = "pt_BR-faber-medium"
+    velocidade: float = Field(1.0, ge=0.5, le=2.0)
+
+
+def separar_voz(voz: str) -> tuple:
+    engine, _, nome = voz.partition(":") if ":" in voz else ("piper", "", voz)
+    if engine not in ENGINES_TTS or not RE_VOZ.match(nome or ""):
+        raise GatewayErro(400, "voz inválida")
+    return engine, nome
+
+
+def wav_bytes(amostras, taxa: int) -> bytes:
+    """float32 (-1..1) → WAV PCM 16 bits mono."""
+    import io
+    import wave
+
+    import numpy as np
+    pcm = (np.clip(amostras, -1.0, 1.0) * 32767).astype(np.int16).tobytes()
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(taxa)
+        w.writeframes(pcm)
+    return buf.getvalue()
+
+
+_piper_vozes: dict = {}
+_kokoro: dict = {}
+
+
+def _sintetizar_piper(nome: str, texto: str, velocidade: float) -> bytes:
+    """Piper carregado na memória (uma frase em ~0,1-0,25 s)."""
+    import io
+    import wave
+
+    from piper import PiperVoice, SynthesisConfig
+    modelo = piper_dir() / f"{nome}.onnx"
+    if not modelo.is_file():
+        raise GatewayErro(503, f"voz do piper ausente: {nome}")
+    if nome not in _piper_vozes:
+        _piper_vozes[nome] = PiperVoice.load(str(modelo))
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        _piper_vozes[nome].synthesize_wav(texto, w, syn_config=SynthesisConfig(length_scale=1.0 / velocidade))
+    return buf.getvalue()
+
+
+def _sintetizar_kokoro(nome: str, texto: str, velocidade: float) -> bytes:
+    import numpy as np
+    if nome not in KOKORO_VOZES:
+        raise GatewayErro(400, f"voz do kokoro inválida: {nome}")
+    if "pipe" not in _kokoro:
+        from kokoro import KPipeline
+        _kokoro["pipe"] = KPipeline(lang_code="p", repo_id="hexgrad/Kokoro-82M", device="cuda" if _cuda() else "cpu")
+    partes = [a.numpy() if hasattr(a, "numpy") else a for _, _, a in _kokoro["pipe"](texto, voice=nome, speed=velocidade)]
+    if not partes:
+        raise GatewayErro(502, "kokoro não gerou áudio")
+    return wav_bytes(np.concatenate(partes), 24000)
+
+
+class Chatterbox:
+    """Processo persistente no ambiente do chatterbox (modelo carregado uma vez). Uma frase por vez."""
+
+    def __init__(self):
+        self.proc = None
+
+    async def garantir(self):
+        if self.proc and self.proc.returncode is None:
+            return
+        py = chatterbox_py()
+        if not py:
+            raise GatewayErro(503, "chatterbox desligado (defina TC_CHATTERBOX_PY)")
+        self.proc = await asyncio.create_subprocess_exec(
+            py, str(AQUI / "chatterbox_worker.py"),
+            stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.DEVNULL, limit=1 << 20,
+        )
+
+    async def falar(self, ref: Path, texto: str, saida: Path) -> None:
+        await self.garantir()
+        pedido = json.dumps({"texto": texto, "ref": str(ref), "saida": str(saida)}, ensure_ascii=False) + "\n"
+        self.proc.stdin.write(pedido.encode("utf-8"))
+        await self.proc.stdin.drain()
+        try:
+            linha = await asyncio.wait_for(self.proc.stdout.readline(), TIMEOUT_CHATTERBOX)
+        except asyncio.TimeoutError:
+            self.proc.kill()
+            raise GatewayErro(504, "chatterbox: tempo esgotado")
+        if not linha:
+            raise GatewayErro(502, "chatterbox encerrou")
+        r = json.loads(linha)
+        if not r.get("ok"):
+            raise GatewayErro(502, f"chatterbox: {r.get('erro', 'falhou')}")
+
+
+_chatterbox = Chatterbox()
+
+
+async def sintetizar(engine: str, nome: str, texto: str, velocidade: float) -> bytes:
+    if engine == "kokoro":
+        if not _tem("kokoro"):
+            raise GatewayErro(503, "kokoro não instalado")
+        async with lock_de("tts-kokoro"):
+            return await run_in_threadpool(_sintetizar_kokoro, nome, texto, velocidade)
+    if engine == "chatterbox":
+        ref = vozes_dir() / f"{nome}.wav"
+        if not ref.is_file():
+            raise GatewayErro(503, f"sem voz de referência para {nome}")
+        with tempfile.TemporaryDirectory(prefix="tc-cb-") as d:
+            saida = Path(d) / "fala.wav"
+            async with lock_de("tts-chatterbox"):
+                await _chatterbox.falar(ref, texto, saida)
+            return saida.read_bytes()
+    # piper: na memória quando o módulo existe, senão o binário
+    if _tem("piper"):
+        async with lock_de("tts-piper"):
+            return await run_in_threadpool(_sintetizar_piper, nome, texto, velocidade)
+    piper = achar_bin("piper")
+    modelo = piper_dir() / f"{nome}.onnx"
+    if not piper or not modelo.is_file():
+        raise GatewayErro(503, "piper ou voz indisponível")
+    with tempfile.TemporaryDirectory(prefix="tc-tts-") as d:
+        saida = Path(d) / "fala.wav"
+        await rodar_tts(piper, modelo, texto, saida, d)
+        if not saida.is_file() or saida.stat().st_size == 0:
+            raise GatewayErro(502, "piper não gerou áudio")
+        return saida.read_bytes()
+
+
+def aquecer() -> None:
+    """Carrega STT e vozes antes do primeiro uso (TC_AQUECER=1), para a 1ª fala não pagar o carregamento."""
+    try:
+        if escolher_stt():
+            _carregar_stt()
+        if _tem("kokoro"):
+            for v in KOKORO_VOZES:
+                _sintetizar_kokoro(v, "Olá.", 1.0)
+        if _tem("piper"):
+            for v in listar_vozes():
+                _sintetizar_piper(v, "Olá.", 1.0)
+    except Exception as e:  # aquecimento nunca derruba o gateway
+        print(f"[gateway] aquecimento incompleto: {e}", flush=True)
 
 
 # ---------------------------------------------------------------- app
 
 app = FastAPI(title="Treinador de Carisma — gateway local", version=VERSAO,
               docs_url=None, redoc_url=None, openapi_url=None)
+
+
+@app.on_event("startup")
+async def ao_iniciar():
+    if os.environ.get("TC_AQUECER") == "1":
+        asyncio.get_running_loop().run_in_executor(None, aquecer)
 
 
 @app.middleware("http")
@@ -473,7 +710,7 @@ async def chat(pedido: PedidoChat):
 
 
 @app.post("/api/stt")
-async def stt(audio: UploadFile = File(...)):
+async def stt(audio: UploadFile = File(...), palavras: bool = Form(True)):
     if not detectar_stt()["ok"]:
         return erro(503, "nenhum motor de STT instalado (faster_whisper ou whisper)")
     with tempfile.TemporaryDirectory(prefix="tc-stt-") as d:
@@ -483,7 +720,7 @@ async def stt(audio: UploadFile = File(...)):
         try:
             await converter_wav(origem, destino)
             async with lock_de("stt"):
-                resultado = await run_in_threadpool(_transcrever, destino)
+                resultado = await run_in_threadpool(_transcrever, destino, palavras)
         except GatewayErro as e:
             return erro(e.status, e.msg)
     return resultado
@@ -494,21 +731,11 @@ async def tts(pedido: PedidoTTS):
     texto = pedido.texto.strip()
     if not texto:
         return erro(400, "texto vazio")
-    if not RE_VOZ.match(pedido.voz):
-        return erro(400, "voz inválida")
-    piper = achar_bin("piper")
-    modelo = piper_dir() / f"{pedido.voz}.onnx"
-    if not piper or not modelo.is_file():
-        return erro(503, "piper ou voz indisponível")
-    with tempfile.TemporaryDirectory(prefix="tc-tts-") as d:
-        saida = Path(d) / "fala.wav"
-        try:
-            await rodar_tts(piper, modelo, texto, saida, d)
-        except GatewayErro as e:
-            return erro(e.status, e.msg)
-        if not saida.is_file() or saida.stat().st_size == 0:
-            return erro(502, "piper não gerou áudio")
-        dados = saida.read_bytes()
+    try:
+        engine, nome = separar_voz(pedido.voz)
+        dados = await sintetizar(engine, nome, texto, pedido.velocidade)
+    except GatewayErro as e:
+        return erro(e.status, e.msg)
     return Response(dados, media_type="audio/wav")
 
 

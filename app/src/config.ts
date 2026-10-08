@@ -1,3 +1,4 @@
+import type { EnginesTts } from './voz/vozes';
 // Configuração do motor e da voz (preferência deste navegador) + detecção da edição.
 import { motorFake } from './motor/fake';
 import { motorAnthropic, motorCompativelOpenAI, motorGateway, motorOllamaDireto, motorWebLLM } from './motor/motores';
@@ -14,6 +15,10 @@ export interface Config {
   chaves: { openai: string; anthropic: string; openrouter: string };
   modelos: { openai: string; anthropic: string; openrouter: string; webllm: string };
   vozAuto: boolean;
+  /** conversa contínua: microfone aberto, sem botão */
+  maosLivres: boolean;
+  /** o treinador pausa sozinho quando a conversa desanda */
+  pausaAuto: boolean;
   modo: Modo;
   treinador: Treinador['id'];
   alvo: Alvo;
@@ -28,6 +33,8 @@ export const PADRAO: Config = {
   chaves: { openai: '', anthropic: '', openrouter: '' },
   modelos: { openai: 'gpt-5-mini', anthropic: 'claude-haiku-5-5', openrouter: 'openai/gpt-5-mini', webllm: 'Qwen2.5-3B-Instruct-q4f16_1-MLC' },
   vozAuto: true,
+  maosLivres: false,
+  pausaAuto: true,
   modo: 'carisma',
   treinador: 'executiva',
   alvo: 'mulher',
@@ -60,7 +67,7 @@ export interface Saude {
   edicao?: string;
   motores?: Record<string, { ok: boolean; modelos?: string[] }>;
   stt?: { ok: boolean; engine?: string };
-  tts?: { ok: boolean; engine?: string; vozes?: string[] };
+  tts?: { ok: boolean; engine?: string; vozes?: string[]; engines?: EnginesTts };
 }
 
 /** Edição Local = existe gateway na mesma origem. */

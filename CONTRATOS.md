@@ -22,7 +22,7 @@ Porta padrão **8787** (env `TC_PORTA`), bind `127.0.0.1` (env `TC_HOST` para VP
 
 ### GET /api/health
 ```json
-{ "ok": true, "versao": "1.0.0", "edicao": "local",
+{ "ok": true, "versao": "1.1.0", "edicao": "local",
   "motores": {
     "ollama": {"ok": true, "modelos": ["qwen3.6:35b-a3b", "..."]},
     "codex":  {"ok": true},
@@ -30,7 +30,10 @@ Porta padrão **8787** (env `TC_PORTA`), bind `127.0.0.1` (env `TC_HOST` para VP
     "gemini": {"ok": false}
   },
   "stt": {"ok": true, "engine": "whisper"},
-  "tts": {"ok": true, "engine": "piper", "vozes": ["pt_BR-faber-medium"]} }
+  "tts": {"ok": true, "engine": "kokoro", "vozes": ["pt_BR-faber-medium"],
+          "engines": {"piper": {"ok": true, "vozes": ["pt_BR-faber-medium"]},
+                      "kokoro": {"ok": true, "vozes": ["pf_dora", "pm_alex", "pm_santa"]},
+                      "chatterbox": {"ok": false, "vozes": []}}} }
 ```
 Detecção: ollama = GET `$OLLAMA_URL/api/tags` (padrão `http://127.0.0.1:11434`); codex = `codex login status` contém "Logged in"; claude = binário `claude` existe; gemini = binário `gemini` existe. Health não pode demorar > 3 s (timeouts curtos, cache de 30 s).
 
@@ -56,10 +59,18 @@ Resposta: `text/plain; charset=utf-8` em streaming (chunks de texto). Erro: HTTP
 - Fila: uma geração por vez por motor (lock), para não carregar dois modelos.
 
 ### POST /api/stt
-`multipart/form-data` campo `audio` (webm/ogg/wav). Resposta `{"texto":"...","palavras":[{"w":"oi","ini":0.0,"fim":0.3}]}`. Engine: `faster_whisper` se instalado, senão `whisper` (openai-whisper), modelo `env TC_WHISPER=small`, idioma `pt`. 503 se nenhum.
+`multipart/form-data` campo `audio` (webm/ogg/wav) e, opcional, `palavras=false` (sem tempo por palavra: mais rápido; é o que o mãos-livres usa). Resposta `{"texto":"...","palavras":[{"w":"oi","ini":0.0,"fim":0.3}],"duracao_audio":1.8}`. Engine (`env TC_STT=auto|whisper|faster_whisper`): no `auto`, openai-whisper na GPU quando houver CUDA, senão faster-whisper (CPU), senão openai-whisper; modelo `env TC_WHISPER=small`, idioma `pt`. Áudio quase mudo e frases típicas de alucinação ("Obrigado.", "Legendas pela comunidade…") voltam como texto vazio. 503 se nenhum.
 
 ### POST /api/tts
-`{"texto":"...","voz":"pt_BR-faber-medium"}` → `audio/wav`. Engine: binário `piper` + modelo em `~/.local/share/piper/<voz>.onnx` (env `TC_PIPER_DIR`). 503 se indisponível (o front cai para `speechSynthesis`).
+`{"texto":"...","voz":"kokoro:pf_dora","velocidade":1.0}` → `audio/wav`. `voz` = `engine:voz` ou só o nome de uma voz do Piper (compatível com a 1.0). `velocidade` de 0,5 a 2 (422 fora disso).
+- `kokoro:<voz>` — Kokoro-82M (Apache 2.0), vozes `pf_dora` (feminina), `pm_alex`, `pm_santa` (masculinas); GPU quando houver.
+- `piper:<voz>` — Piper carregado na memória (módulo `piper-tts`) ou o binário `piper`; modelo em `~/.local/share/piper/<voz>.onnx` (env `TC_PIPER_DIR`).
+- `chatterbox:<id>` — opcional: processo persistente no Python do chatterbox (`TC_CHATTERBOX_PY`) com o WAV de referência do próprio usuário em `~/.local/share/treinador-carisma/vozes/<id>.wav` (env `TC_VOZES_DIR`; `<id>` = id do treinador, ex. `executiva`). Nenhuma voz de referência vem no projeto.
+- 400 para engine/voz inválida; 503 se indisponível (o front cai para `speechSynthesis`).
+- `TC_AQUECER=1` carrega o STT e as vozes na subida do gateway (a 1ª fala não paga o carregamento).
+
+### Ollama
+O gateway manda `keep_alive` (env `TC_OLLAMA_KEEP_ALIVE`, padrão `30m`) para o modelo não ser descarregado entre as falas.
 
 ## 3. Cena (YAML)
 
@@ -114,6 +125,8 @@ Conquista: critérios devem incluir um de **pressão** (insistir após sinal neg
   "fim": false, "resultado": null }
 ```
 `resultado` quando `fim:true`: `"sucesso" | "fracasso" | "neutro"`.
+**`fala` vem primeiro** (v1.1.0): o app lê esse campo enquanto o JSON ainda chega e fala frase a frase. Se o JSON final for inválido depois de alguma frase já dita, o que foi dito vale como fala e o estado não muda; se nada foi dito, uma tentativa normal (sem streaming).
+Na transcrição que o personagem recebe, as falas dele aparecem como `VOCÊ (Nome): ...` e as do usuário como `fala N (USUÁRIO): ...`; fala cortada pelo usuário leva `[o USUÁRIO te interrompeu aqui]`.
 
 **Avaliador** (fim/pausa da cena):
 ```json

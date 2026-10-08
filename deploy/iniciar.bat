@@ -22,6 +22,9 @@ if not exist "%VENV%\Scripts\python.exe" (
 )
 echo ^> Instalando dependencias ...
 "%VENV%\Scripts\python.exe" -m pip install -q -r "%GW%\requirements.txt" || exit /b 1
+rem Voz local (opcional): set TC_INSTALAR_VOZ=1 instala faster-whisper, piper-tts e kokoro
+if "%TC_INSTALAR_VOZ%"=="1" "%VENV%\Scripts\python.exe" -m pip install -q faster-whisper piper-tts kokoro
+if "%TC_AQUECER%"=="" set "TC_AQUECER=1"
 
 echo ^> Verificando motores ...
 "%VENV%\Scripts\python.exe" -c "import urllib.request,os;urllib.request.urlopen(os.environ['OLLAMA_URL']+'/api/tags',timeout=2)" >nul 2>&1 && (echo   ollama: ok) || (echo   ollama: NAO encontrado - instale em https://ollama.com e rode: ollama pull llama3.2)

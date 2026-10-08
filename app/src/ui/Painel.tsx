@@ -8,6 +8,7 @@ import { Rosto } from '../rostos/Rosto';
 import { cenaProposta, identidade, msgsTreinador } from '../sessao/prompts';
 import { treinador as acharTreinador } from '../treinadores';
 import { falar, pararFala } from '../voz/voz';
+import { escolherVoz, type EnginesTts } from '../voz/vozes';
 import { BarraFala } from './BarraFala';
 import { Radar } from './Radar';
 
@@ -15,7 +16,7 @@ interface Props {
   config: Config;
   motor: Motor;
   registros: Registro[];
-  vozGateway: boolean;
+  vozes: EnginesTts | null;
   sttGateway: boolean;
   aoAbrirCena: (id: string) => void;
 }
@@ -26,7 +27,7 @@ interface Linha {
   cena?: string | null;
 }
 
-export function Painel({ config, motor, registros, vozGateway, sttGateway, aoAbrirCena }: Props) {
+export function Painel({ config, motor, registros, vozes, sttGateway, aoAbrirCena }: Props) {
   const t = acharTreinador(config.treinador);
   const [linhas, setLinhas] = useState<Linha[]>([]);
   const [pensando, setPensando] = useState(false);
@@ -68,7 +69,7 @@ export function Painel({ config, motor, registros, vozGateway, sttGateway, aoAbr
       const { limpo, cena } = cenaProposta(resposta);
       const valida = cena && cenas.some((c) => c.id === cena) ? cena : null;
       setLinhas([...historico, { role: 'assistant', content: limpo, cena: valida }]);
-      if (config.vozAuto) falar(limpo, t.voz, vozGateway ? 'gateway' : 'navegador', setBoca);
+      if (config.vozAuto) falar(limpo, escolherVoz(t.voz, t.id, vozes), setBoca);
     } catch (e) {
       setErro((e as Error).message);
       setLinhas(historico);

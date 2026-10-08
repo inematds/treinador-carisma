@@ -6,3 +6,6 @@ __pycache__/
 .pytest_cache/
 *.log
 .env
+handoffs/
+app/e2e/.audio/
+longrun/*/evidencias/*.webm

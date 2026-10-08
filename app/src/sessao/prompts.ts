@@ -22,7 +22,11 @@ export function identidade(cena: Cena, alvo: Alvo): Identidade {
 export function transcricao(falas: Fala[], nomePersonagem: string): string {
   let n = 0;
   return falas
-    .map((f) => (f.quem === 'voce' ? `fala ${++n} (USUÁRIO): ${f.texto}` : `${nomePersonagem.toUpperCase()}: ${f.texto}`))
+    .map((f) =>
+      f.quem === 'voce'
+        ? `fala ${++n} (USUÁRIO): ${f.texto}`
+        : `${nomePersonagem.toUpperCase()}: ${f.texto}${f.interrompida ? ' [o USUÁRIO interrompeu esta fala]' : ''}`,
+    )
     .join('\n');
 }
 
@@ -47,8 +51,14 @@ export function msgsPersonagem(cena: Cena, alvo: Alvo, falas: Fala[], estado: Es
     sucesso: cena.fim.sucesso,
   });
   const restantes = Math.max(0, cena.fim.max_falas - falas.filter((f) => f.quem === 'voce').length);
+  // Do ponto de vista do personagem: as falas dele aparecem como "VOCÊ (Nome)", para o modelo
+  // não confundir quem disse o quê (com o nome solto, o qwen3 às vezes assumia o lado do usuário).
+  let n = 0;
+  const conversa = falas
+    .map((f) => (f.quem === 'voce' ? `fala ${++n} (USUÁRIO): ${f.texto}` : `VOCÊ (${id.nome}): ${f.texto}${f.interrompida ? ' [o USUÁRIO te interrompeu aqui]' : ''}`))
+    .join('\n');
   const usuario =
-    `Conversa até agora:\n${transcricao(falas, id.nome)}\n\n` +
+    `Conversa até agora (VOCÊ = ${id.nome}; USUÁRIO = quem está treinando):\n${conversa}\n\n` +
     `Seu estado atual: ${JSON.stringify(estado)}\n` +
     `Falas restantes do usuário: ${restantes}${restantes === 0 ? ' (encerre agora, com fim = true)' : ''}\n` +
     `Responda com o JSON da próxima fala de ${id.nome}.`;

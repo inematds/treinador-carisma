@@ -404,6 +404,63 @@ button.cartao:hover {
   opacity: calc(0.25 + var(--vol, 0) * 0.75);
   transform: scale(calc(1 + var(--vol, 0) * 0.25));
 }
+/* ---------- Conversa contínua */
+.maos-livres {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--linha);
+  border-radius: 14px;
+  background: var(--painel-2);
+  min-height: 56px;
+}
+.maos-livres .onda {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--texto-3);
+  transition: transform 0.08s linear, background 0.2s;
+}
+.maos-livres.ouvindo .onda {
+  background: var(--ruim);
+  transform: scale(calc(0.7 + var(--vol, 0) * 0.9));
+  box-shadow: 0 0 0 calc(var(--vol, 0) * 10px) color-mix(in srgb, var(--ruim) 35%, transparent);
+}
+.maos-livres.pensando .onda {
+  background: var(--acento);
+  animation: pulso 1s ease-in-out infinite;
+}
+.maos-livres.falando .onda {
+  background: var(--acento);
+}
+.maos-livres .estado-voz {
+  color: var(--texto-2);
+  overflow-wrap: anywhere;
+}
+@keyframes pulso {
+  50% {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .maos-livres .onda {
+    animation: none !important;
+    transition: none;
+  }
+}
+.alternar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.alternar input {
+  width: auto;
+}
 .dica {
   color: var(--texto-3);
   font-size: 0.82rem;

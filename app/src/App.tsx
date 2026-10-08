@@ -9,6 +9,7 @@ import { Inicio } from './ui/Inicio';
 import { Painel } from './ui/Painel';
 import { Palco } from './ui/Palco';
 import { VERSAO } from './versao';
+import type { EnginesTts } from './voz/vozes';
 
 /** Escolhe o melhor motor do gateway: Ollama com um modelo bom, senão Codex. */
 function motorDoGateway(s: Saude): Pick<Config, 'gatewayMotor' | 'modelo'> {
@@ -47,11 +48,15 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const motor = useMemo(() => criarMotor(config, setProgressoWebllm), [config]);
+  // O motor só muda quando muda o que ele usa (ligar o mãos-livres não pode reiniciar a cena).
+  const chaveMotor = JSON.stringify([config.tipo, config.gatewayMotor, config.modelo, config.ollamaUrl, config.chaves, config.modelos]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const motor = useMemo(() => criarMotor(config, setProgressoWebllm), [chaveMotor]);
   const cena = cenaId ? cenaPorId(cenaId) : undefined;
   const falta = motorPronto(config);
-  const vozGateway = config.tipo === 'gateway' && !!saude?.tts?.ok;
-  const sttGateway = config.tipo === 'gateway' && !!saude?.stt?.ok;
+  // Voz e ouvido locais valem para qualquer motor quando o gateway existe (Edição Local).
+  const vozes: EnginesTts | null = saude?.tts?.ok ? (saude.tts.engines ?? { piper: { ok: true, vozes: saude.tts.vozes } }) : null;
+  const sttGateway = !!saude?.stt?.ok;
   const t = treinador(config.treinador);
 
   const abrirCena = (id: string) => {
@@ -121,13 +126,14 @@ export function App() {
           cena={cena}
           config={config}
           motor={motor}
-          vozGateway={vozGateway}
+          vozes={vozes}
           sttGateway={sttGateway}
           aoSair={() => setCenaId(null)}
           aoRegistrar={() => carregar().then((r) => setRegistros([...r]))}
+          aoMudarConfig={mudar}
         />
       ) : (
-        <Painel config={config} motor={motor} registros={registros} vozGateway={vozGateway} sttGateway={sttGateway} aoAbrirCena={abrirCena} />
+        <Painel config={config} motor={motor} registros={registros} vozes={vozes} sttGateway={sttGateway} aoAbrirCena={abrirCena} />
       )}
 
       {verConfig && (

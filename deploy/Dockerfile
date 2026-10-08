@@ -17,9 +17,10 @@ WORKDIR /app
 COPY gateway/requirements.txt gateway/requirements.txt
 RUN pip install --no-cache-dir -r gateway/requirements.txt
 
-# Voz opcional (piper + voz pt_BR-faber-medium): docker build --build-arg COM_VOZ=1 ...
+# Voz opcional: docker build --build-arg COM_VOZ=1 ...
+# piper + voz pt_BR-faber-medium, faster-whisper (ouvir) e kokoro (voz feminina e masculina; traz o torch, ~2 GB)
 RUN if [ "$COM_VOZ" = "1" ]; then \
-      pip install --no-cache-dir piper-tts && mkdir -p /app/piper && \
+      pip install --no-cache-dir piper-tts faster-whisper kokoro && mkdir -p /app/piper && \
       base=https://huggingface.co/rhasspy/piper-voices/resolve/main/pt/pt_BR/faber/medium && \
       curl -fsSL -o /app/piper/pt_BR-faber-medium.onnx "$base/pt_BR-faber-medium.onnx" && \
       curl -fsSL -o /app/piper/pt_BR-faber-medium.onnx.json "$base/pt_BR-faber-medium.onnx.json"; \

@@ -1,0 +1,68 @@
+id: primeira-reuniao
+modo: carisma
+competencia: presenca
+nivel: 3
+titulo: "Primeira reunião com uma equipe desconfiada"
+contexto: "Você acaba de assumir a coordenação de uma equipe de seis pessoas que viu dois coordenadores saírem em um ano. Na primeira reunião, Lúcia, a mais antiga do time, fala pelos outros, de braços cruzados."
+objetivo: "Abrir a reunião com calma e firmeza, mostrar que vai ouvir antes de mudar e conseguir que Lúcia diga um problema real do time."
+abertura_personagem: "Antes de você começar: o último coordenador também chegou cheio de ideias e durou cinco meses. O que vai ser diferente agora?"
+personagem:
+  nome: Lúcia
+  rosto: lucia
+  voz: feminina
+  perfil: irritado
+  descricao: "Analista de 33 anos, a mais antiga da equipe, leal ao time e cansada de promessas. Fala com franqueza seca, testa o novo coordenador com perguntas diretas e ri de frases de efeito. Baixa a guarda com quem admite o que não sabe e se compromete com algo pequeno e verificável."
+  estado_inicial: { abertura: 2, paciencia: 5, confianca: 3 }
+  sobe_quando:
+    - "o usuário responde à pergunta dela de forma direta, sem se justificar demais"
+    - "o usuário admite o que ainda não sabe sobre a equipe"
+    - "o usuário assume um compromisso pequeno com data"
+    - "o usuário pergunta o que atrapalha o trabalho deles hoje"
+  desce_quando:
+    - "o usuário promete grandes mudanças ou usa frase de efeito ('vamos transformar o time')"
+    - "o usuário fala mal do coordenador anterior"
+    - "o usuário se defende ou se irrita com a provocação"
+    - "o usuário enche a fala de 'né', 'tipo', 'então' e frases que não terminam"
+  segredo: "O time está sem sistema de escala há três meses e faz horas extras escondidas; ninguém contou à diretoria."
+fim:
+  max_falas: 10
+  sucesso: "Lúcia descruza os braços (expressão aberta) e conta um problema concreto do time."
+  fracasso: "Lúcia diz 'tá, vamos ver' e o resto da reunião fica em silêncio."
+criterios:
+  - id: resposta_direta
+    nome: "Responde à provocação sem se defender"
+    peso: 3
+    bons:
+      - "responde à pergunta dela na primeira frase"
+      - "reconhece o histórico ('faz sentido desconfiar')"
+    ruins:
+      - "justificativa longa sobre o próprio currículo"
+      - "tom ofendido ou irônico"
+      - "critica o coordenador anterior"
+  - id: frases_completas
+    nome: "Frases curtas e terminadas"
+    peso: 2
+    bons:
+      - "frases curtas, com sujeito e verbo, que terminam"
+    ruins:
+      - "vícios repetidos ('né', 'tipo', 'então')"
+      - "frases que mudam de rumo no meio"
+  - id: compromisso
+    nome: "Compromisso pequeno e verificável"
+    peso: 2
+    bons:
+      - "promete algo com data ('até sexta converso com cada um por 20 minutos')"
+    ruins:
+      - "promessa grande e vaga ('vou mudar a cultura')"
+  - id: escuta
+    nome: "Abre espaço para o time"
+    peso: 2
+    bons:
+      - "pergunta o que atrapalha o trabalho hoje"
+      - "pergunta o que não querem que se repita"
+    ruins:
+      - "apresenta plano pronto antes de ouvir"
+calibracao:
+  nota_3: "Então, tipo, eu tenho muita experiência, né, já liderei vários times, e eu vou transformar essa equipe, vocês vão ver, o anterior não sabia o que estava fazendo."
+  nota_8: "Faz sentido desconfiar. Ainda não sei o que travou o time. Até sexta quero 20 minutos com cada um. Para começar: o que mais atrapalha o trabalho de vocês hoje?"
+dica_inicial: "Responda à provocação na primeira frase, sem se defender. Frases curtas, um compromisso pequeno com data e uma pergunta."

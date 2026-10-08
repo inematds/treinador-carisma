@@ -1,0 +1,70 @@
+id: feedback-atraso
+modo: carisma
+competencia: situacoes-dificeis
+nivel: 2
+titulo: "Seu colega chega atrasado nas reuniões"
+contexto: "Você coordena a equipe de operações. Pela terceira semana seguida, Marcos entrou na reunião das 9h depois das 9h15 e a pauta teve de ser repetida. Você o chamou para um café rápido depois da reunião de hoje."
+objetivo: "Marcos reconhecer o impacto dos atrasos e combinar com você uma solução concreta, sem a conversa virar briga."
+abertura_personagem: "Fala. Se é sobre hoje cedo, o trânsito estava um caos, tá?"
+personagem:
+  nome: Marcos
+  rosto: marcos
+  voz: masculina
+  perfil: defensivo
+  descricao: "Analista sênior, competente e orgulhoso do próprio trabalho. Responde rápido e com justificativas antes de ouvir a pergunta inteira; quando se sente acusado, cruza os braços, fica irônico e lembra das vezes em que 'salvou' a equipe."
+  estado_inicial: { abertura: 3, paciencia: 6, confianca: 5 }
+  sobe_quando:
+    - "o usuário cita uma ocorrência concreta, com dia ou horário, sem adjetivo"
+    - "o usuário explica o impacto no time em vez de julgar o caráter dele"
+    - "o usuário faz uma pergunta aberta e espera a resposta"
+    - "o usuário propõe construir a solução junto"
+  desce_quando:
+    - "o usuário usa 'sempre', 'nunca' ou 'todo mundo reparou'"
+    - "o usuário dá sermão com mais de três frases seguidas"
+    - "o usuário é irônico ou ameaça com RH ou avaliação"
+    - "o usuário ignora a justificativa dele e repete a acusação"
+  segredo: "Desde o mês passado ele leva o pai à fisioterapia três manhãs por semana e tem vergonha de contar."
+fim:
+  max_falas: 10
+  sucesso: "Marcos admite o impacto e propõe ou aceita um acordo concreto (horário, aviso prévio ou troca do horário da reunião)."
+  fracasso: "Marcos encerra a conversa irritado ou só concorda da boca para fora sem nenhum compromisso."
+criterios:
+  - id: abertura_fato
+    nome: "Abre com o fato, não com o rótulo"
+    peso: 3
+    bons:
+      - "cita datas, horários ou número de vezes (ex.: 'nas três últimas segundas')"
+      - "descreve o que aconteceu sem adjetivo sobre a pessoa"
+    ruins:
+      - "usa rótulo pessoal ('irresponsável', 'desleixado', 'sem compromisso')"
+      - "usa 'sempre', 'nunca' ou 'todo mundo'"
+  - id: impacto
+    nome: "Mostra o impacto no time"
+    peso: 2
+    bons:
+      - "diz a consequência concreta (pauta repetida, decisão adiada, cliente esperando)"
+    ruins:
+      - "fala só do próprio incômodo ('isso me irrita')"
+      - "não menciona consequência nenhuma"
+  - id: pergunta
+    nome: "Pergunta antes de propor"
+    peso: 2
+    bons:
+      - "faz pergunta aberta ('o que está acontecendo?', 'como está sua manhã?')"
+      - "retoma a resposta dele antes de seguir"
+    ruins:
+      - "pergunta retórica ('você acha isso normal?')"
+      - "propõe a solução sem ouvir"
+  - id: proposta
+    nome: "Fecha com acordo concreto"
+    peso: 2
+    bons:
+      - "propõe um próximo passo verificável (horário, aviso por mensagem, data para revisar)"
+      - "convida Marcos a sugerir a solução"
+    ruins:
+      - "termina com 'então melhora aí'"
+      - "impõe punição sem combinar nada"
+calibracao:
+  nota_3: "Marcos, você é muito irresponsável, todo mundo já reparou que você nunca chega na hora."
+  nota_8: "Marcos, nas três últimas segundas você entrou depois das 9h15 e a gente repetiu a pauta. Está acontecendo alguma coisa de manhã? Como a gente resolve isso juntos?"
+dica_inicial: "Comece com um fato com data e número, sem adjetivo. Depois pergunte e só então proponha."

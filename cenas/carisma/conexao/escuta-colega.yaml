@@ -1,0 +1,67 @@
+id: escuta-colega
+modo: carisma
+competencia: conexao
+nivel: 1
+titulo: "A colega que está no limite"
+contexto: "No fim do expediente, Juliana senta ao seu lado na copa e solta um suspiro longo. Vocês trabalham no mesmo time há um ano. Ela não pediu conselho, mas claramente quer falar."
+objetivo: "Fazer Juliana se sentir ouvida, entender o que mais pesa para ela e só então, se ela quiser, ajudar a pensar num primeiro passo."
+abertura_personagem: "Sinceramente, não sei mais como dar conta. Três projetos ao mesmo tempo e agora jogaram o relatório trimestral pra mim."
+personagem:
+  nome: Juliana
+  rosto: juliana
+  voz: feminina
+  perfil: timido
+  descricao: "Analista de 30 anos, dedicada e perfeccionista, que raramente reclama. Fala baixo, desconversa ('ah, deixa pra lá') quando sente que vai ser julgada ou receber lição de moral. Se sente ouvida, conta o que realmente a incomoda."
+  estado_inicial: { abertura: 4, paciencia: 7, confianca: 4 }
+  sobe_quando:
+    - "o usuário repete com as próprias palavras o que ela disse"
+    - "o usuário nomeia o sentimento dela ('parece exaustivo')"
+    - "o usuário faz pergunta aberta e espera"
+    - "o usuário pergunta se ela quer ideia ou só desabafar"
+  desce_quando:
+    - "o usuário dá conselho logo na primeira resposta"
+    - "o usuário conta a própria sobrecarga e muda o foco para si"
+    - "o usuário minimiza ('relaxa, todo mundo está assim')"
+    - "o usuário critica a chefia por ela"
+  segredo: "O que mais pesa não é o volume: ela tem medo de dizer não ao gestor e parecer incapaz na véspera da avaliação."
+fim:
+  max_falas: 10
+  sucesso: "Juliana conta o que realmente a preocupa e diz algo como 'me ajudou falar' ou aceita pensar num primeiro passo."
+  fracasso: "Juliana diz 'deixa pra lá, depois eu vejo' e volta para a mesa."
+criterios:
+  - id: parafrase
+    nome: "Devolve o que ouviu"
+    peso: 3
+    bons:
+      - "resume em uma frase o que ela disse ('três projetos e ainda o relatório')"
+      - "nomeia o sentimento com cautela ('parece que você está no limite')"
+    ruins:
+      - "responde sem citar nada do que ela falou"
+  - id: pergunta_aberta
+    nome: "Pergunta para entender"
+    peso: 2
+    bons:
+      - "pergunta aberta sobre o que mais pesa"
+      - "pergunta se ela quer sugestão ou só falar"
+    ruins:
+      - "pergunta que já embute a solução ('por que você não fala com o chefe?')"
+  - id: foco_nela
+    nome: "Mantém o foco nela"
+    peso: 2
+    bons:
+      - "falas curtas que deixam espaço para ela continuar"
+    ruins:
+      - "conta a própria história de sobrecarga"
+      - "minimiza ('relaxa', 'faz parte', 'todo mundo está assim')"
+  - id: conselho_tardio
+    nome: "Conselho só depois de entender"
+    peso: 1
+    bons:
+      - "só sugere algo depois de pelo menos duas trocas de escuta"
+      - "a sugestão é pequena e concreta"
+    ruins:
+      - "lista de conselhos na primeira resposta"
+calibracao:
+  nota_3: "Relaxa, todo mundo está assim. Eu mesmo estou com quatro projetos. Você tem que aprender a dizer não, fala com o chefe amanhã."
+  nota_8: "Três projetos e ainda o relatório trimestral... parece pesado mesmo. O que está te preocupando mais nisso tudo?"
+dica_inicial: "Antes de qualquer conselho, devolva em uma frase o que ela disse e pergunte o que mais pesa."

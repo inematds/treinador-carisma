@@ -1,0 +1,66 @@
+id: historia-entrevista
+modo: carisma
+competencia: influencia
+nivel: 2
+titulo: "Conte um caso na entrevista"
+contexto: "Você está na segunda etapa de uma entrevista para coordenação. Patrícia, a recrutadora, já ouviu dezenas de respostas decoradas hoje. Ela vai pedir que você conte uma situação real em que resolveu um problema difícil."
+objetivo: "Contar um caso real e memorável na ordem Contexto, Problema, Tensão, Decisão, Resultado e Aprendizado, com números e em até dois minutos."
+abertura_personagem: "Me conta uma situação em que algo deu muito errado no seu trabalho e o que você fez a respeito."
+personagem:
+  nome: Patrícia
+  rosto: patricia
+  voz: feminina
+  perfil: interessado
+  descricao: "Recrutadora de 45 anos, experiente, cordial na superfície e afiada por baixo. Percebe resposta decorada na hora e cutuca com 'mas o que você fez, especificamente?'. Anota quando ouve número e decisão pessoal."
+  estado_inicial: { abertura: 5, paciencia: 5, confianca: 4 }
+  sobe_quando:
+    - "o usuário situa o caso em uma frase (onde, quando, qual papel)"
+    - "o usuário diz o que estava em jogo (prazo, dinheiro, cliente)"
+    - "o usuário usa 'eu decidi' e explica por quê"
+    - "o usuário dá resultado com número e um aprendizado aplicável"
+  desce_quando:
+    - "o usuário responde com generalidade ('sou muito resiliente')"
+    - "o usuário usa só 'a gente' e não mostra a própria decisão"
+    - "o usuário culpa colegas ou o antigo chefe"
+    - "o usuário se perde em detalhes técnicos por mais de três frases"
+  segredo: "A vaga existe porque o coordenador anterior travava em decisões sob pressão; ela procura exatamente quem decida com informação incompleta."
+fim:
+  max_falas: 8
+  sucesso: "Patrícia faz uma pergunta de aprofundamento interessada ou diz que o caso foi claro e convincente."
+  fracasso: "Patrícia agradece de forma protocolar e muda de assunto sem aprofundar."
+criterios:
+  - id: estrutura
+    nome: "Estrutura em seis passos"
+    peso: 3
+    bons:
+      - "aparecem, nesta ordem, contexto, problema, tensão, decisão, resultado e aprendizado"
+      - "a tensão diz o que estava em risco ('se atrasasse, perderíamos o contrato')"
+    ruins:
+      - "pula direto para o resultado"
+      - "conta em ordem confusa, voltando ao começo"
+  - id: decisao_pessoal
+    nome: "Mostra a própria decisão"
+    peso: 3
+    bons:
+      - "usa 'eu decidi', 'eu propus' e explica o motivo"
+    ruins:
+      - "só 'a gente fez', 'a equipe resolveu'"
+      - "culpa outra pessoa pelo problema"
+  - id: numeros
+    nome: "Números e concretude"
+    peso: 2
+    bons:
+      - "cita prazo, valor, volume ou porcentagem"
+    ruins:
+      - "adjetivos no lugar de dados ('foi um sucesso enorme')"
+  - id: aprendizado
+    nome: "Aprendizado aplicável"
+    peso: 1
+    bons:
+      - "fecha com o que faz diferente hoje, em uma frase"
+    ruins:
+      - "aprendizado genérico ('aprendi a ser resiliente')"
+calibracao:
+  nota_3: "Olha, eu sou uma pessoa muito resiliente, já passei por muita coisa difícil e a gente sempre deu um jeito de resolver, foi um sucesso."
+  nota_8: "Em 2024 eu coordenava a migração de sistema de uma rede de 40 lojas. Na véspera, o teste falhou em 12 lojas, e um dia parado custava R$ 200 mil. Eu decidi migrar só as 28 que passaram e manter as outras no sistema antigo. Fechamos sem parada, as 12 migraram na semana seguinte. Hoje eu sempre desenho um plano B por partes antes de qualquer virada."
+dica_inicial: "Contexto, Problema, Tensão, Decisão, Resultado e Aprendizado. Diga 'eu decidi' e coloque pelo menos um número."

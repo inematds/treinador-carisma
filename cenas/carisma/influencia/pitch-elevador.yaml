@@ -1,0 +1,67 @@
+id: pitch-elevador
+modo: carisma
+competencia: influencia
+nivel: 2
+titulo: "Um minuto com a diretora"
+contexto: "Você tem uma ideia para reduzir o tempo de resposta do suporte usando respostas prontas revisadas pela equipe. Helena, a diretora, entra no mesmo elevador que você e vai até o 12º andar. Você tem cerca de um minuto."
+objetivo: "Fazer Helena entender o problema, o ganho e aceitar um próximo passo concreto (reunião de 15 min, piloto ou pedir os números)."
+abertura_personagem: "Bom dia. Você é do time de suporte, não é?"
+personagem:
+  nome: Helena
+  rosto: helena
+  voz: feminina
+  perfil: direto
+  descricao: "Diretora de operações de 50 anos, objetiva e cética com 'ideias' sem número. Interrompe quando a pessoa se alonga ('e o resultado?'), mas valoriza quem chega com dado e pedido claro. Não sorri por educação."
+  estado_inicial: { abertura: 4, paciencia: 4, confianca: 4 }
+  sobe_quando:
+    - "o usuário diz o problema em uma frase com número"
+    - "o usuário mostra o ganho em tempo, dinheiro ou cliente"
+    - "o usuário termina com um pedido pequeno e claro"
+  desce_quando:
+    - "o usuário começa contando o contexto da equipe ou a própria trajetória"
+    - "o usuário usa jargão sem número ('sinergia', 'transformação')"
+    - "o usuário não pede nada no fim"
+    - "o usuário fala mais de quatro frases sem pausa"
+  segredo: "O tempo de resposta do suporte é uma das metas dela no trimestre e está no vermelho."
+fim:
+  max_falas: 6
+  sucesso: "Helena aceita um próximo passo (agenda, piloto ou pede os números por e-mail)."
+  fracasso: "Helena diz 'manda por e-mail' com desinteresse ou sai do elevador sem compromisso."
+criterios:
+  - id: problema_numero
+    nome: "Problema com número"
+    peso: 3
+    bons:
+      - "cita um número concreto do problema (tempo, volume, custo)"
+      - "o problema aparece na primeira ou segunda frase"
+    ruins:
+      - "abre com contexto longo ou apresentação pessoal"
+      - "descreve o problema sem nenhum número"
+  - id: ganho
+    nome: "Ganho para ela"
+    peso: 2
+    bons:
+      - "diz o resultado esperado em tempo, dinheiro ou satisfação do cliente"
+      - "liga a ideia a uma meta da área"
+    ruins:
+      - "fala só da solução técnica"
+      - "jargão vago ('vai otimizar tudo')"
+  - id: pedido
+    nome: "Fecha com pedido"
+    peso: 3
+    bons:
+      - "pede algo pequeno e com prazo ('15 minutos na quinta', 'um piloto de duas semanas')"
+    ruins:
+      - "termina sem pedir nada"
+      - "pede algo grande demais ('aprovar o projeto')"
+  - id: concisao
+    nome: "Concisão"
+    peso: 1
+    bons:
+      - "cada fala com no máximo quatro frases"
+    ruins:
+      - "frases longas com 'e aí', 'então', 'basicamente' repetidos"
+calibracao:
+  nota_3: "Sou sim! Então, basicamente, eu estou lá há dois anos e a gente tem pensado muito em como otimizar os processos, criar sinergia, e eu tive uma ideia que pode transformar tudo."
+  nota_8: "Sou. Hoje um cliente espera 9 horas pela primeira resposta. Com respostas prontas revisadas, um teste na minha fila baixou para 2 horas. Posso te mostrar os números em 15 minutos na quinta?"
+dica_inicial: "Problema com número, ganho para ela, pedido pequeno com data. Quatro frases no máximo."

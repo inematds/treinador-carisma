@@ -1,0 +1,65 @@
+id: apresentacao-cliente
+modo: carisma
+competencia: presenca
+nivel: 2
+titulo: "O cliente que olha o relógio"
+contexto: "Você vai abrir a apresentação da proposta de renovação para Carlos, gerente de compras de um cliente grande. A reunião atrasou dez minutos por causa dele, e ele avisa logo de cara que tem pouco tempo."
+objetivo: "Abrir com calma, sem pedir desculpas em excesso, e prender a atenção de Carlos nos primeiros 30 segundos com o que interessa a ele."
+abertura_personagem: "Olha, eu tenho quinze minutos, no máximo. Vai direto ao ponto."
+personagem:
+  nome: Carlos
+  rosto: carlos
+  voz: masculina
+  perfil: ocupado
+  descricao: "Gerente de compras de 45 anos, pressionado por corte de custos. Fala seco, olha o celular, interrompe com 'e quanto isso custa?'. Não se impressiona com slide bonito; presta atenção quando ouve o próprio problema descrito com número."
+  estado_inicial: { abertura: 3, paciencia: 3, confianca: 5 }
+  sobe_quando:
+    - "o usuário confirma o tempo com tranquilidade e diz o que vai mostrar"
+    - "o usuário começa pelo problema ou número do cliente, não pela própria empresa"
+    - "o usuário faz uma pausa e uma pergunta curta para ele"
+  desce_quando:
+    - "o usuário pede desculpas mais de uma vez ou parece apressado"
+    - "o usuário começa pela história da própria empresa"
+    - "o usuário fala rápido, sem pausa, para caber tudo"
+    - "o usuário promete 'ser rápido' e depois se alonga"
+  segredo: "Ele precisa justificar ao financeiro uma redução de 10% nos custos de fornecedores até o fim do mês."
+fim:
+  max_falas: 8
+  sucesso: "Carlos larga o celular e faz uma pergunta de interesse sobre a proposta."
+  fracasso: "Carlos pede para mandar por e-mail e encerra."
+criterios:
+  - id: calma
+    nome: "Abertura calma"
+    peso: 3
+    bons:
+      - "aceita o tempo com uma frase curta ('quinze minutos bastam')"
+      - "no máximo uma desculpa"
+    ruins:
+      - "várias desculpas ou justificativas"
+      - "frases emendadas sem ponto, sinal de pressa"
+  - id: foco_cliente
+    nome: "Começa pelo cliente"
+    peso: 3
+    bons:
+      - "primeira informação é um número ou problema do cliente"
+      - "diz o que ele vai ganhar ao final dos 15 minutos"
+    ruins:
+      - "abre com história ou portfólio da própria empresa"
+  - id: roteiro
+    nome: "Anuncia o roteiro"
+    peso: 1
+    bons:
+      - "diz em uma frase o que vai cobrir ('três pontos: custo, prazo e risco')"
+    ruins:
+      - "começa sem dizer para onde vai"
+  - id: pausa_pergunta
+    nome: "Pausa e pergunta"
+    peso: 2
+    bons:
+      - "faz uma pergunta curta para checar prioridade dele"
+    ruins:
+      - "fala sem dar espaço para ele responder"
+calibracao:
+  nota_3: "Ah, claro, desculpa, desculpa mesmo, vou ser rapidinho, então, a nossa empresa foi fundada em 1998 e hoje a gente atende mais de 300 clientes em todo o Brasil e..."
+  nota_8: "Quinze minutos bastam. Vou mostrar como reduzir 12% do seu custo anual com a gente sem mudar o prazo de entrega. Antes: o que pesa mais hoje, preço ou prazo?"
+dica_inicial: "Aceite o tempo em uma frase, abra com um número do cliente e faça uma pergunta. Uma desculpa, no máximo."

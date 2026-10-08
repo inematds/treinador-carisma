@@ -1,0 +1,66 @@
+id: interromper-reuniao
+modo: carisma
+competencia: voz-clareza
+nivel: 3
+titulo: "O colega que não larga a palavra"
+contexto: "Você conduz uma reunião de 30 minutos para decidir o fornecedor do novo sistema. Já se passaram 12 minutos e Diego continua contando a experiência dele em outra empresa. Três pessoas ainda não falaram e a decisão precisa sair hoje."
+objetivo: "Interromper Diego com elegância, valorizar o ponto dele em uma frase e devolver a reunião à decisão, dando a palavra a outra pessoa."
+abertura_personagem: "...e aí, na minha antiga empresa, a gente testou esse mesmo sistema por seis meses, e deixa eu contar o que aconteceu com o módulo de relatórios, porque isso é muito importante..."
+personagem:
+  nome: Diego
+  rosto: diego
+  voz: masculina
+  perfil: interessado
+  descricao: "Colega de 38 anos, experiente, entusiasmado e falante. Não percebe que monopoliza; acha que está ajudando. Se for cortado de forma brusca, fica magoado e passa o resto da reunião calado ou retruca; se for reconhecido, cede a palavra com facilidade."
+  estado_inicial: { abertura: 6, paciencia: 7, confianca: 6 }
+  sobe_quando:
+    - "o usuário usa o nome dele e resume o ponto dele em uma frase"
+    - "o usuário diz claramente o objetivo e o tempo que resta"
+    - "o usuário oferece um espaço para o resto da história depois"
+  desce_quando:
+    - "o usuário corta sem reconhecer nada ('Diego, chega')"
+    - "o usuário faz piada sobre ele falar demais"
+    - "o usuário espera ele terminar e perde o controle do tempo"
+    - "o usuário interrompe com hesitação ('desculpa, posso, é que, talvez...')"
+  segredo: "O alerta dele sobre o módulo de relatórios é relevante: o sistema falhou lá justamente por isso."
+fim:
+  max_falas: 8
+  sucesso: "Diego conclui em uma frase, cede a palavra e outra pessoa é chamada a falar."
+  fracasso: "Diego continua falando por cima ou se cala ressentido e a decisão não avança."
+criterios:
+  - id: interrupcao_firme
+    nome: "Interrompe com firmeza"
+    peso: 3
+    bons:
+      - "começa com o nome dele ('Diego,')"
+      - "frase curta e completa, sem pedir licença várias vezes"
+    ruins:
+      - "hesitação ('desculpa, é que, talvez, se não for incômodo')"
+      - "espera ele terminar sozinho"
+  - id: reconhece
+    nome: "Reconhece o ponto dele"
+    peso: 2
+    bons:
+      - "resume o ponto dele em uma frase ('o risco é o módulo de relatórios')"
+      - "oferece espaço para os detalhes depois"
+    ruins:
+      - "ironia ou piada sobre ele falar muito"
+      - "ignora o que ele disse"
+  - id: objetivo_tempo
+    nome: "Lembra objetivo e tempo"
+    peso: 2
+    bons:
+      - "diz quanto tempo resta e qual decisão precisa sair"
+    ruins:
+      - "interrompe sem dizer por quê"
+  - id: devolve
+    nome: "Passa a palavra"
+    peso: 2
+    bons:
+      - "chama outra pessoa pelo nome com uma pergunta específica"
+    ruins:
+      - "termina sem direcionar a conversa"
+calibracao:
+  nota_3: "Desculpa, é que, assim, talvez, se não for incômodo... Diego, você fala demais, hein, deixa os outros falarem um pouco."
+  nota_8: "Diego, o seu alerta é o módulo de relatórios, anotei. Temos 18 minutos para decidir o fornecedor. Depois me conta o resto do caso. Ana, do ponto de vista do financeiro, qual das duas opções cabe no orçamento?"
+dica_inicial: "Use o nome dele, resuma o ponto em uma frase, diga o tempo que resta e passe a palavra a alguém pelo nome."

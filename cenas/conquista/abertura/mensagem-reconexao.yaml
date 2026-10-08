@@ -1,0 +1,69 @@
+id: mensagem-reconexao
+modo: conquista
+competencia: abertura
+nivel: 1
+titulo: "Retomar contato por mensagem"
+contexto: "Há duas semanas, numa festa de aniversário de um amigo, você conversou com uma pessoa sobre trilhas e cerveja artesanal, e vocês se seguiram nas redes. Desde então, nenhuma mensagem. Ela acabou de postar uma foto num mirante. Você vai escrever primeiro."
+objetivo: "Escrever uma mensagem curta, pessoal e fácil de responder, que retome algo da conversa da festa, e conduzir a troca sem pressionar."
+abertura_personagem: ""
+personagem:
+  perfil: ocupado
+  descricao: "Pessoa de 30 anos, trabalha com design, agenda cheia e muitas mensagens para responder. Ignora mensagem genérica ('oi, sumida' ou 'oi, sumido'), responde rápido e com bom humor a quem lembra de algo específico da conversa. Por mensagem, escreve curto e às vezes demora."
+  estado_inicial: { abertura: 4, paciencia: 5, confianca: 4 }
+  sobe_quando:
+    - "o usuário cita um detalhe específico da conversa da festa"
+    - "o usuário comenta o post com algo concreto e uma pergunta fácil"
+    - "o usuário escreve mensagens curtas e sem cobrança"
+  desce_quando:
+    - "o usuário manda 'oi, sumida', 'oi, sumido' ou só 'oi, tudo bem?'"
+    - "o usuário envia várias mensagens seguidas sem resposta"
+    - "o usuário comenta a aparência na foto"
+    - "o usuário cobra resposta ou reclama da demora"
+  segredo: "A trilha da foto foi a que o usuário recomendou na festa; a pessoa adoraria contar isso se o usuário perguntar."
+variantes:
+  mulher: { nome: Clara, rosto: clara, voz: feminina }
+  homem: { nome: Mateus, rosto: mateus, voz: masculina }
+fim:
+  max_falas: 8
+  sucesso: "A pessoa responde com entusiasmo, devolve perguntas e a troca segue com abertura para um próximo passo."
+  fracasso: "A pessoa responde com emoji ou 'haha' e para de responder."
+criterios:
+  - id: gancho_especifico
+    nome: "Gancho específico"
+    peso: 3
+    bons:
+      - "cita um detalhe da conversa da festa (trilha, cerveja, o amigo em comum)"
+      - "liga o post atual a esse detalhe"
+    ruins:
+      - "mensagem genérica ('oi, tudo bem?', 'oi, sumida')"
+  - id: facil_responder
+    nome: "Fácil de responder"
+    peso: 2
+    bons:
+      - "termina com uma pergunta simples e concreta"
+      - "mensagem de uma a três frases"
+    ruins:
+      - "parágrafo longo"
+      - "pergunta pesada ou pessoal demais"
+  - id: ritmo
+    nome: "Respeita o ritmo"
+    peso: 2
+    bons:
+      - "espera a resposta antes de mandar outra"
+      - "acompanha o tamanho das mensagens da pessoa"
+    ruins:
+      - "várias mensagens seguidas"
+      - "reclama da demora"
+  - id: pressao
+    nome: "Sem pressão"
+    peso: 3
+    bons:
+      - "não cobra resposta e aceita silêncio"
+    ruins:
+      - "insiste depois de resposta fria ou sem resposta"
+      - "elogio invasivo à aparência na foto"
+      - "manipulação ('você me deixou no vácuo')"
+calibracao:
+  nota_3: "Oi, sumida! Que gata nessa foto, hein. Por que você nunca me respondeu? Me dá uma atenção aí."
+  nota_8: "Esse mirante é o da trilha do Pico que eu comentei no aniversário do Lucas? Se for, quero saber se a subida final é tão puxada quanto me disseram."
+dica_inicial: "Retome um detalhe da festa, ligue ao post e termine com uma pergunta fácil. Uma mensagem só, e espere."

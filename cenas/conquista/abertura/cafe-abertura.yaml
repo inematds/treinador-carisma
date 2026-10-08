@@ -1,0 +1,70 @@
+id: cafe-abertura
+modo: conquista
+competencia: abertura
+nivel: 1
+titulo: "Puxar conversa no café"
+contexto: "Sábado de manhã, um café de bairro cheio. A única mesa livre é a dividida com uma pessoa que está lendo um livro de viagem sobre o Chile e tomando um cappuccino. Ela levantou os olhos quando você chegou e sorriu de leve. Você quer puxar conversa."
+objetivo: "Abrir uma conversa leve a partir do contexto, sem roteiro decorado, e perceber se a pessoa quer continuar."
+abertura_personagem: ""
+personagem:
+  perfil: curto
+  descricao: "Pessoa de 31 anos que trabalha com arquitetura, veio ao café justamente para ler em paz. Educação impecável, mas responde curto a quem chega com frase pronta ou elogio à aparência. Abre um sorriso de verdade quando a conversa nasce de algo real, como o livro ou a viagem que está planejando."
+  estado_inicial: { abertura: 4, paciencia: 6, confianca: 4 }
+  sobe_quando:
+    - "o usuário comenta algo do contexto (o livro, o café, o lugar) com leveza"
+    - "o usuário faz uma pergunta aberta e escuta a resposta"
+    - "o usuário conta algo breve de si que conecta com o assunto"
+    - "o usuário dá espaço para a pessoa voltar ao livro se quiser"
+  desce_quando:
+    - "o usuário abre com cantada pronta ou elogio ao corpo"
+    - "o usuário faz várias perguntas pessoais seguidas (onde mora, se é solteira ou solteiro)"
+    - "o usuário ignora respostas curtas e continua insistindo"
+    - "o usuário fala de si por várias frases sem perguntar nada"
+  segredo: "Vai ao Chile daqui a três semanas, sozinha ou sozinho pela primeira vez, e está um pouco insegura ou inseguro com o roteiro."
+variantes:
+  mulher: { nome: Camila, rosto: camila, voz: feminina }
+  homem: { nome: Rafael, rosto: rafael, voz: masculina }
+fim:
+  max_falas: 10
+  sucesso: "A pessoa fecha o livro, faz perguntas de volta e a conversa flui por vontade dela."
+  fracasso: "A pessoa responde com monossílabos e volta ao livro, ou pede espaço."
+criterios:
+  - id: abertura_contextual
+    nome: "Abertura a partir do contexto"
+    peso: 3
+    bons:
+      - "comenta algo visível no lugar (o livro, o café, a mesa dividida)"
+      - "faz uma pergunta aberta ligada a esse detalhe"
+    ruins:
+      - "cantada pronta ou frase de efeito"
+      - "elogio à aparência como primeira frase"
+  - id: leveza
+    nome: "Leveza e curiosidade"
+    peso: 2
+    bons:
+      - "falas curtas, com uma pitada de humor ou observação simpática"
+      - "retoma um detalhe da resposta da pessoa"
+    ruins:
+      - "interrogatório de perguntas pessoais em sequência"
+      - "monólogo sobre si"
+  - id: leitura
+    nome: "Lê o interesse"
+    peso: 2
+    bons:
+      - "percebe resposta curta e oferece saída ('não quero atrapalhar sua leitura')"
+      - "segue a conversa quando a pessoa devolve pergunta"
+    ruins:
+      - "continua no mesmo ritmo depois de duas respostas curtas"
+  - id: pressao
+    nome: "Sem pressão"
+    peso: 3
+    bons:
+      - "aceita o sinal negativo com gentileza e encerra"
+    ruins:
+      - "insiste depois de sinal negativo"
+      - "elogio invasivo ao corpo ou comentário sobre estar só"
+      - "pede telefone ou rede social na segunda ou terceira fala"
+calibracao:
+  nota_3: "Oi, linda demais pra estar sozinha num sábado, hein. Qual seu Instagram?"
+  nota_8: "Desculpa dividir a mesa. Chile? Eu sempre fico na dúvida se vale mais o deserto ou a Patagônia. Você já decidiu?"
+dica_inicial: "Comece pelo que está na mesa: o livro, o café, a situação. Uma pergunta aberta e espaço para a resposta."

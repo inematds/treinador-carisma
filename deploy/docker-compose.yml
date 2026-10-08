@@ -1,0 +1,45 @@
+# Treinador de Carisma — Edição Local com Docker (gateway + Ollama).
+# Uso (na pasta deploy/):  docker compose up -d
+#   depois baixe um modelo:  docker compose exec ollama ollama pull llama3.2
+#   abra http://127.0.0.1:8787/
+# Voz (piper) opcional: COM_VOZ=1 docker compose build
+services:
+  gateway:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        COM_VOZ: "${COM_VOZ:-0}"
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      TC_HOST: 0.0.0.0
+      TC_PORTA: "8787"
+      TC_STATIC_DIR: /app/treinar
+    ports:
+      - "127.0.0.1:${TC_PORTA:-8787}:8787"   # só nesta máquina; troque para "8787:8787" numa VPS
+    volumes:
+      - ../treinar:/app/treinar:ro
+    depends_on:
+      - ollama
+    mem_limit: 8g
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama:/root/.ollama
+    environment:
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+    restart: unless-stopped
+    # GPU NVIDIA (opcional):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+volumes:
+  ollama:

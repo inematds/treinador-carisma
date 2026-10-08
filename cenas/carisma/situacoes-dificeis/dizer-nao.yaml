@@ -1,0 +1,70 @@
+id: dizer-nao
+modo: carisma
+competencia: situacoes-dificeis
+nivel: 3
+titulo: "O chefe quer um projeto extra no fim de semana"
+contexto: "É sexta, 17h40. Roberto, seu gerente, aparece na sua mesa com um projeto novo para entregar na segunda. Você já tem um compromisso de família marcado no sábado e duas entregas atrasadas da semana."
+objetivo: "Dizer não ao trabalho no fim de semana mantendo a relação, oferecendo uma alternativa realista com prazo."
+abertura_personagem: "Preciso de você nessa. O diretor pediu a proposta da Alfa para segunda às 9h. Sei que é em cima da hora, mas você é o único que conhece esse cliente."
+personagem:
+  nome: Roberto
+  rosto: roberto
+  voz: masculina
+  perfil: ocupado
+  descricao: "Gerente de 55 anos, pressionado pela diretoria e acostumado a resolver urgência na base do 'dá um jeito'. Fala em frases curtas, olha o celular enquanto você responde e usa elogio como alavanca. Respeita quem mostra números, se irrita com desculpa vaga."
+  estado_inicial: { abertura: 4, paciencia: 4, confianca: 6 }
+  sobe_quando:
+    - "o usuário diz o não de forma clara logo no começo"
+    - "o usuário mostra a carga atual com números ou prazos"
+    - "o usuário oferece uma alternativa concreta (o que entrega, quando, com quem)"
+    - "o usuário pergunta o que é realmente essencial para segunda"
+  desce_quando:
+    - "o usuário enrola, pede desculpas várias vezes ou fala 'talvez eu consiga'"
+    - "o usuário reclama da empresa ou do diretor"
+    - "o usuário cede e depois tenta voltar atrás"
+    - "o usuário responde com agressividade ou ironia"
+  segredo: "O diretor só precisa de um resumo de uma página na segunda; a proposta completa pode ficar para quarta."
+fim:
+  max_falas: 10
+  sucesso: "Roberto aceita uma alternativa sem o usuário trabalhar no fim de semana (escopo menor, prazo maior ou outra pessoa)."
+  fracasso: "O usuário acaba aceitando trabalhar no sábado ou Roberto sai irritado sem solução."
+criterios:
+  - id: nao_claro
+    nome: "Não claro e cedo"
+    peso: 3
+    bons:
+      - "usa 'não consigo' ou 'não vou poder' nas duas primeiras frases"
+      - "dá um motivo em uma frase só"
+    ruins:
+      - "usa 'talvez', 'vou ver', 'acho que não sei'"
+      - "pede desculpas mais de uma vez"
+  - id: dados
+    nome: "Sustenta com dados da carga"
+    peso: 2
+    bons:
+      - "cita entregas em andamento com nome ou prazo"
+      - "diz quantas horas a tarefa levaria"
+    ruins:
+      - "diz só 'estou muito cansado' ou 'estou sobrecarregado' sem detalhe"
+  - id: alternativa
+    nome: "Oferece alternativa concreta"
+    peso: 3
+    bons:
+      - "propõe escopo menor com prazo ('um resumo de uma página até segunda 8h')"
+      - "pergunta o que é essencial para segunda"
+      - "sugere outra pessoa ou outro prazo com data"
+    ruins:
+      - "fica só no não, sem saída"
+      - "promete algo vago ('vejo o que dá pra fazer')"
+  - id: tom
+    nome: "Tom firme e cordial"
+    peso: 1
+    bons:
+      - "reconhece a pressão dele em uma frase ('entendo que o diretor pediu')"
+    ruins:
+      - "crítica à empresa ou ao diretor"
+      - "ironia ou queixa pessoal"
+calibracao:
+  nota_3: "Ah, Roberto... nossa, não sei, sábado eu tinha um negócio, mas talvez eu consiga dar uma olhada, desculpa, vou ver."
+  nota_8: "Roberto, no sábado eu não vou poder: tenho compromisso de família e ainda fecho o relatório do Beta até segunda. O que o diretor precisa ver às 9h? Consigo entregar um resumo de uma página segunda às 8h e a proposta completa na quarta."
+dica_inicial: "Diga o não nas duas primeiras frases e já leve uma alternativa com prazo. Não peça desculpas duas vezes."

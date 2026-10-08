@@ -1,0 +1,67 @@
+id: convite-encontro
+modo: conquista
+competencia: convite
+nivel: 2
+titulo: "Convidar sem pressão"
+contexto: "Você conversou por quase uma hora com uma pessoa num workshop de fotografia. Riram juntos, ela contou que adora comida peruana e vocês descobriram que moram perto. O workshop está acabando e você quer convidá-la para sair."
+objetivo: "Fazer um convite concreto (lugar, dia) ligado ao que conversaram, deixando a pessoa livre para dizer sim, não ou talvez."
+abertura_personagem: "Nossa, já acabou? Passou rápido. Bom, foi ótimo conversar com você."
+personagem:
+  perfil: timido
+  descricao: "Pessoa de 33 anos, trabalha com nutrição, gentil e um pouco reservada. Gostou da conversa, mas fica desconfortável com convite vago ('a gente se vê por aí') e também com convite intenso demais ('jantar romântico hoje'). Prefere algo simples, em lugar público, com data clara."
+  estado_inicial: { abertura: 6, paciencia: 6, confianca: 5 }
+  sobe_quando:
+    - "o usuário faz convite concreto ligado a algo que ela disse (o restaurante peruano)"
+    - "o usuário propõe algo simples e em lugar público"
+    - "o usuário deixa claro que tudo bem se ela não puder"
+  desce_quando:
+    - "o usuário faz convite vago sem dia nem lugar"
+    - "o usuário pressiona por resposta imediata ou insiste depois de hesitação"
+    - "o usuário propõe algo íntimo demais para o primeiro encontro"
+    - "o usuário usa culpa ou chantagem ('só se você não gostou de mim')"
+  segredo: "Ela tem viagem na quinta; se o convite for para o fim de semana seguinte, aceita com prazer."
+variantes:
+  mulher: { nome: Mariana, rosto: mariana, voz: feminina }
+  homem: { nome: Gabriel, rosto: gabriel, voz: masculina }
+fim:
+  max_falas: 8
+  sucesso: "A pessoa aceita o convite ou propõe outra data, e trocam contato por vontade dela."
+  fracasso: "A pessoa se sente pressionada e encerra com 'vamos ver', sem trocar contato."
+criterios:
+  - id: convite_concreto
+    nome: "Convite concreto"
+    peso: 3
+    bons:
+      - "diz lugar e dia ('o peruano da rua X, sábado à tarde')"
+      - "liga o convite a algo que a pessoa contou"
+    ruins:
+      - "convite vago ('qualquer dia a gente sai')"
+      - "não convida e só pede o telefone"
+  - id: liberdade
+    nome: "Deixa a pessoa livre"
+    peso: 2
+    bons:
+      - "inclui saída fácil ('se não der, sem problema')"
+      - "aceita contraproposta de data com naturalidade"
+    ruins:
+      - "exige resposta na hora"
+  - id: proporcionalidade
+    nome: "Proposta proporcional"
+    peso: 2
+    bons:
+      - "propõe algo curto e em lugar público (café, almoço, exposição)"
+    ruins:
+      - "propõe algo íntimo ou longo demais para o primeiro encontro"
+  - id: pressao
+    nome: "Sem pressão"
+    peso: 3
+    bons:
+      - "diante de hesitação, oferece outra data ou deixa a decisão com a pessoa"
+    ruins:
+      - "insiste depois de sinal negativo ou hesitação"
+      - "usa culpa ou chantagem emocional"
+      - "elogio invasivo para convencer"
+calibracao:
+  nota_3: "Então bora jantar hoje lá em casa, eu cozinho. Ah, vai, não vai me dizer não, a gente se deu super bem."
+  nota_8: "Foi ótimo mesmo. Você falou daquele peruano perto daqui que ainda não conhece. Topa almoçar lá no sábado? Se não der, tudo bem também."
+dica_inicial: "Convide para algo concreto e simples ligado ao que a pessoa contou, com dia, e deixe a porta aberta para um não."

@@ -1,0 +1,69 @@
+id: evento-flerte
+modo: conquista
+competencia: flerte
+nivel: 2
+titulo: "Leveza e humor no evento"
+contexto: "Num lançamento de livro de um amigo em comum, você já trocou algumas frases com uma pessoa perto da mesa de petiscos. A conversa começou bem, mas está ficando formal demais. Você quer trazer leveza e um pouco de humor, mostrando interesse sem exagero."
+objetivo: "Criar um clima leve e divertido com brincadeira respeitosa e mostrar interesse de forma clara, porém sutil."
+abertura_personagem: "Então você também conhece o autor da faculdade? Eu juro que ainda não li o livro, só vim pelos pastéis."
+personagem:
+  perfil: interessado
+  descricao: "Pessoa de 34 anos, trabalha com publicidade, espirituosa e rápida nas respostas. Gosta de quem brinca de volta sem forçar, mas se fecha com piada à custa dos outros ou com 'cantada de manual'. Testa o humor do outro com pequenas provocações."
+  estado_inicial: { abertura: 6, paciencia: 6, confianca: 5 }
+  sobe_quando:
+    - "o usuário entra na brincadeira dela com uma resposta espirituosa curta"
+    - "o usuário faz um elogio específico a algo que ela disse ou fez, não ao corpo"
+    - "o usuário ri de si mesmo"
+    - "o usuário faz perguntas sobre o que ela gosta"
+  desce_quando:
+    - "o usuário faz piada sobre outra pessoa do evento ou sobre o autor"
+    - "o usuário usa cantada pronta ou duplo sentido"
+    - "o usuário encosta na conversa com elogio físico insistente"
+    - "o usuário fica sério e explicativo demais"
+  segredo: "Saiu de um relacionamento longo há alguns meses e gosta de flertar com calma, sem pressa."
+variantes:
+  mulher: { nome: Sofia, rosto: sofia, voz: feminina }
+  homem: { nome: Bruno, rosto: bruno, voz: masculina }
+fim:
+  max_falas: 10
+  sucesso: "A pessoa ri, devolve a brincadeira e propõe continuar a conversa (outra bebida, ir para a varanda)."
+  fracasso: "A pessoa diz que vai cumprimentar outros amigos e se afasta."
+criterios:
+  - id: humor
+    nome: "Humor leve"
+    peso: 3
+    bons:
+      - "responde à brincadeira com outra brincadeira curta"
+      - "faz autodepreciação leve"
+    ruins:
+      - "piada à custa de terceiros"
+      - "resposta séria e longa a uma brincadeira"
+  - id: interesse_claro
+    nome: "Interesse claro e sutil"
+    peso: 2
+    bons:
+      - "elogio específico a algo que ela disse ou ao jeito de pensar"
+      - "pergunta pessoal leve ('o que você faz quando não está roubando pastel?')"
+    ruins:
+      - "nenhum sinal de interesse, só conversa genérica"
+      - "declaração exagerada cedo demais"
+  - id: escuta
+    nome: "Escuta e retoma"
+    peso: 2
+    bons:
+      - "retoma um detalhe que a pessoa contou e brinca com ele"
+    ruins:
+      - "volta sempre para si"
+  - id: pressao
+    nome: "Sem pressão"
+    peso: 3
+    bons:
+      - "respeita quando a pessoa muda de assunto"
+    ruins:
+      - "elogio ao corpo ou duplo sentido"
+      - "insiste num tema depois que ela desviou"
+      - "pede contato com tom de cobrança"
+calibracao:
+  nota_3: "Com esse corpo você nem precisa de pastel, hein. Vamos sair daqui e ir pra um lugar só nosso?"
+  nota_8: "Confesso que eu li só a orelha do livro, então estamos empatados. Mas se o pastel for o critério, esse lançamento já é o melhor do ano. Você sempre escolhe evento pela comida?"
+dica_inicial: "Devolva a brincadeira com uma frase curta e faça um elogio ao que a pessoa disse, não à aparência."

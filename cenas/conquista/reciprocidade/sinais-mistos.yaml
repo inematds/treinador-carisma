@@ -1,0 +1,67 @@
+id: sinais-mistos
+modo: conquista
+competencia: reciprocidade
+nivel: 2
+titulo: "Respostas curtas: há interesse?"
+contexto: "Numa confraternização de amigos, você puxou conversa com uma pessoa que acabou de conhecer. Ela responde, mas curto, e olha de vez em quando para o celular e para o grupo dela. Você precisa ler se há interesse e agir de acordo."
+objetivo: "Fazer no máximo duas tentativas abertas, observar se a pessoa devolve perguntas ou se fecha, e recuar com elegância se não houver reciprocidade."
+abertura_personagem: "É, vim com o pessoal do trabalho."
+personagem:
+  perfil: desinteressado
+  descricao: "Pessoa de 29 anos, simpática com os amigos, mas sem disposição para conhecer gente nova hoje. Responde com educação e frases curtas, não devolve perguntas e procura o celular. Só se abre se o usuário perceber o clima e trouxer um assunto realmente interessante sem cobrar atenção."
+  estado_inicial: { abertura: 2, paciencia: 5, confianca: 4 }
+  sobe_quando:
+    - "o usuário percebe o clima e nomeia com leveza ('parece que você está mais na vibe do seu grupo hoje')"
+    - "o usuário traz um assunto concreto e não pessoal, sem cobrar resposta longa"
+    - "o usuário oferece saída fácil para a pessoa voltar ao grupo"
+  desce_quando:
+    - "o usuário faz pergunta atrás de pergunta depois de respostas curtas"
+    - "o usuário reclama que a pessoa está seca ou cobra atenção"
+    - "o usuário faz elogio físico para forçar reação"
+    - "o usuário pede contato mesmo sem reciprocidade"
+  segredo: "Teve um dia ruim no trabalho e só veio porque os colegas insistiram; não tem nada contra o usuário."
+variantes:
+  mulher: { nome: Larissa, rosto: larissa, voz: feminina }
+  homem: { nome: Thiago, rosto: thiago, voz: masculina }
+fim:
+  max_falas: 8
+  sucesso: "O usuário lê a falta de reciprocidade e encerra com elegância, ou a pessoa se abre espontaneamente porque não se sentiu pressionada."
+  fracasso: "O usuário insiste depois de três respostas curtas, cobra atenção ou pede contato sem reciprocidade."
+criterios:
+  - id: leitura_sinais
+    nome: "Lê os sinais"
+    peso: 3
+    bons:
+      - "depois de duas respostas curtas, muda de abordagem ou oferece saída"
+      - "nomeia o clima com leveza, sem acusar"
+    ruins:
+      - "ignora respostas monossilábicas e segue no mesmo ritmo"
+      - "interpreta resposta curta como 'charme' e aumenta a investida"
+  - id: tentativa_aberta
+    nome: "Tentativa aberta e leve"
+    peso: 2
+    bons:
+      - "faz uma pergunta aberta sobre algo do contexto"
+      - "traz um assunto concreto sem exigir resposta longa"
+    ruins:
+      - "perguntas pessoais em sequência"
+  - id: recuo
+    nome: "Recua com elegância"
+    peso: 2
+    bons:
+      - "encerra com frase gentil e sem cobrança ('foi bom te conhecer, aproveita a festa')"
+    ruins:
+      - "sai magoado ou irônico ('nossa, que simpatia')"
+  - id: pressao
+    nome: "Sem pressão"
+    peso: 3
+    bons:
+      - "não pede contato quando não há reciprocidade"
+    ruins:
+      - "insiste depois de sinal negativo"
+      - "cobra atenção ou reclama da secura"
+      - "elogio invasivo para forçar reação"
+calibracao:
+  nota_3: "Nossa, você é sempre seca assim? Relaxa, eu não mordo. Me passa seu número que depois a gente conversa melhor."
+  nota_8: "Parece que hoje você está mais na vibe do seu grupo, e tudo bem. Foi bom te conhecer, aproveita a festa."
+dica_inicial: "Duas tentativas leves, no máximo. Se as respostas seguirem curtas e sem pergunta de volta, recue com elegância."

@@ -1,0 +1,68 @@
+id: lidar-recusa
+modo: conquista
+competencia: recusa
+nivel: 3
+titulo: "O convite recusado"
+contexto: "Depois de algumas conversas boas no grupo de corrida, você convidou uma pessoa para tomar um café no domingo. Ela respondeu pessoalmente, logo após o treino, e a resposta foi não. Vocês vão continuar se vendo no grupo toda semana."
+objetivo: "Receber o não com elegância, sem insistir, sem pedir explicação e sem constrangimento, preservando a convivência no grupo."
+abertura_personagem: "Olha, agradeço muito o convite, de verdade. Mas não vai rolar. Prefiro manter as coisas como estão aqui no grupo."
+personagem:
+  perfil: direto
+  descricao: "Pessoa de 36 anos, trabalha com engenharia, franca e gentil. Gosta da companhia do usuário no grupo, mas não tem interesse romântico. Já viveu situação chata com alguém que não aceitou um não, por isso observa com atenção como o usuário reage. Se a reação for leve, a amizade fica até mais fácil."
+  estado_inicial: { abertura: 4, paciencia: 5, confianca: 5 }
+  sobe_quando:
+    - "o usuário aceita na primeira resposta, com frase curta e leve"
+    - "o usuário agradece a franqueza"
+    - "o usuário muda o assunto para algo neutro do grupo (o próximo treino)"
+  desce_quando:
+    - "o usuário pergunta o motivo ou pede 'só uma chance'"
+    - "o usuário tenta negociar ('e se for só um café rápido?')"
+    - "o usuário demonstra mágoa, ironia ou se faz de vítima"
+    - "o usuário pede desculpas excessivas e cria constrangimento"
+  segredo: "Está num relacionamento recente e ainda não contou a ninguém do grupo; não deve isso a ninguém."
+variantes:
+  mulher: { nome: Isabela, rosto: isabela, voz: feminina }
+  homem: { nome: Leo, rosto: leo, voz: masculina }
+fim:
+  max_falas: 6
+  sucesso: "O usuário aceita sem insistir e a conversa termina leve, com a pessoa à vontade para seguir no grupo."
+  fracasso: "O usuário insiste, pede explicação ou deixa o clima pesado."
+criterios:
+  - id: aceite
+    nome: "Aceita na primeira resposta"
+    peso: 3
+    bons:
+      - "aceita o não na primeira fala ('tudo certo', 'entendi, sem problema')"
+      - "frase curta e tom leve"
+    ruins:
+      - "pergunta o motivo"
+      - "tenta reformular o convite"
+  - id: preserva
+    nome: "Preserva a convivência"
+    peso: 2
+    bons:
+      - "agradece a franqueza"
+      - "puxa um assunto neutro do grupo (o próximo treino, a prova do mês)"
+    ruins:
+      - "some da conversa de forma brusca ou fria"
+  - id: autocontrole
+    nome: "Sem drama"
+    peso: 2
+    bons:
+      - "não demonstra mágoa nem ironia"
+    ruins:
+      - "ironia ('ok, entendi o recado')"
+      - "se faz de vítima ou pede desculpas várias vezes"
+  - id: pressao
+    nome: "Sem pressão"
+    peso: 3
+    bons:
+      - "não volta ao assunto depois de aceitar"
+    ruins:
+      - "insiste depois do não ('só um café rápido')"
+      - "manipulação ou culpa ('achei que você gostava de mim')"
+      - "pede explicação ou 'uma chance'"
+calibracao:
+  nota_3: "Sério? Mas por quê? Achei que a gente tinha uma conexão. Só um café rápido, vai, que mal tem? Me dá uma chance."
+  nota_8: "Tudo certo, valeu pela franqueza. Te vejo na quarta no treino de tiro, vou tentar não ficar para trás de novo."
+dica_inicial: "Aceite o não na primeira frase, sem perguntar por quê, e devolva a conversa para o terreno comum."

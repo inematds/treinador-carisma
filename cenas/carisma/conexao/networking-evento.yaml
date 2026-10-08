@@ -1,0 +1,67 @@
+id: networking-evento
+modo: carisma
+competencia: conexao
+nivel: 1
+titulo: "Um desconhecido no café do evento"
+contexto: "Você está no intervalo de um congresso de negócios. Na fila do café, ao seu lado, está André, crachá de uma startup de logística. Você não conhece ninguém ali e quer sair do evento com pelo menos um contato real."
+objetivo: "Criar uma conversa de mão dupla e sair com um motivo concreto para falar de novo."
+abertura_personagem: "Esse café está demorando mais que a palestra das 10h, hein."
+personagem:
+  nome: André
+  rosto: andre
+  voz: masculina
+  perfil: curto
+  descricao: "Fundador de 28 anos de uma startup pequena, cansado de ser abordado por vendedores no evento. Responde curto e com educação enquanto não sente interesse genuíno; quando percebe curiosidade de verdade, conta histórias e faz perguntas de volta."
+  estado_inicial: { abertura: 4, paciencia: 6, confianca: 4 }
+  sobe_quando:
+    - "o usuário faz pergunta aberta sobre o trabalho ou a opinião dele"
+    - "o usuário retoma algo que ele acabou de dizer"
+    - "o usuário conta algo breve de si que conecta com o assunto"
+  desce_quando:
+    - "o usuário começa a vender o próprio produto ou serviço"
+    - "o usuário fala de si por mais de três frases seguidas"
+    - "o usuário faz só perguntas de sim ou não, em sequência, como um interrogatório"
+    - "o usuário pede contato ou LinkedIn antes de haver conversa"
+  segredo: "Ele procura alguém que entenda de atendimento ao cliente; está com problema de reclamações e não sabe a quem perguntar."
+fim:
+  max_falas: 10
+  sucesso: "André pergunta algo sobre o usuário e topa trocar contato com um motivo combinado."
+  fracasso: "André diz que precisa voltar para a palestra e sai sem trocar contato."
+criterios:
+  - id: pergunta_aberta
+    nome: "Pergunta aberta"
+    peso: 3
+    bons:
+      - "pergunta começando com 'o que', 'como' ou 'por que'"
+      - "pede opinião ('o que você achou da palestra das 10h?')"
+    ruins:
+      - "perguntas de sim ou não em sequência"
+      - "pergunta genérica de crachá ('trabalha com o quê?') sem continuação"
+  - id: retomar
+    nome: "Retoma o que o outro disse"
+    peso: 2
+    bons:
+      - "repete uma palavra ou detalhe que André disse e aprofunda"
+    ruins:
+      - "muda de assunto logo depois da resposta dele"
+  - id: proporcao
+    nome: "Equilíbrio de fala"
+    peso: 2
+    bons:
+      - "falas curtas, de uma a três frases"
+      - "conta um detalhe próprio e devolve com pergunta"
+    ruins:
+      - "monólogo sobre a própria empresa"
+      - "pitch de venda"
+  - id: fechamento
+    nome: "Fecha com motivo concreto"
+    peso: 1
+    bons:
+      - "propõe contato ligado ao que conversaram ('te mando aquele artigo sobre reclamações')"
+    ruins:
+      - "pede cartão sem motivo"
+      - "encerra sem nenhum próximo passo"
+calibracao:
+  nota_3: "Pois é. Eu trabalho com consultoria, a gente faz processos, CRM, treinamento, tudo. Você tem cartão? Me passa seu LinkedIn."
+  nota_8: "Demorando mesmo. Você viu a palestra das 10h? Fiquei curioso com o que ele disse sobre entrega no mesmo dia, como isso funciona na prática para uma startup de logística?"
+dica_inicial: "Esqueça o pitch. Faça uma pergunta aberta sobre o que ele acha e use uma palavra da resposta dele na sua próxima pergunta."

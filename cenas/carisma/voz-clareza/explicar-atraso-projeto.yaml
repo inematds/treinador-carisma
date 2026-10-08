@@ -1,0 +1,67 @@
+id: explicar-atraso-projeto
+modo: carisma
+competencia: voz-clareza
+nivel: 2
+titulo: "Contar à cliente que o projeto vai atrasar"
+contexto: "O novo portal de pedidos da cliente estava prometido para o dia 15. A integração com o sistema de estoque dela falhou nos testes e a nova data realista é dia 29. Beatriz, a gerente do projeto do lado da cliente, atende sua ligação."
+objetivo: "Comunicar o atraso nas primeiras frases, com causa, nova data e plano, sem rodeios e sem jogar a culpa na cliente."
+abertura_personagem: "Oi, tudo bem? Estava justamente esperando notícias do portal. Como estamos para o dia 15?"
+personagem:
+  nome: Beatriz
+  rosto: beatriz
+  voz: feminina
+  perfil: direto
+  descricao: "Gerente de projetos de 40 anos, organizada e franca. Detesta descobrir problema tarde e desconfia de quem enrola. Fica mais dura quando ouve desculpa vaga ou culpa jogada no time dela; fica parceira quando recebe a verdade cedo com um plano."
+  estado_inicial: { abertura: 6, paciencia: 5, confianca: 6 }
+  sobe_quando:
+    - "o usuário diz que vai atrasar logo na primeira ou segunda frase"
+    - "o usuário dá a nova data exata e a causa em uma frase"
+    - "o usuário apresenta o que já está sendo feito e quando dará notícia de novo"
+    - "o usuário assume a responsabilidade pela previsão errada"
+  desce_quando:
+    - "o usuário enrola antes de dar a notícia ('então, assim, tivemos uns desafios')"
+    - "o usuário usa termo técnico sem explicar"
+    - "o usuário culpa o sistema ou a equipe da cliente"
+    - "o usuário dá data vaga ('umas duas semanas', 'logo')"
+  segredo: "Ela já prometeu o portal à diretoria para o dia 20; precisa de algo que possa mostrar nessa data."
+fim:
+  max_falas: 8
+  sucesso: "Beatriz aceita a nova data ou combina uma entrega parcial para mostrar à diretoria."
+  fracasso: "Beatriz diz que vai escalar o assunto para a diretoria do seu lado."
+criterios:
+  - id: noticia_primeiro
+    nome: "Notícia primeiro"
+    peso: 3
+    bons:
+      - "diz 'vai atrasar' ou equivalente nas duas primeiras frases"
+    ruins:
+      - "abre com rodeio ou com conquistas do projeto antes da notícia"
+  - id: data_causa
+    nome: "Data exata e causa simples"
+    peso: 3
+    bons:
+      - "dá a nova data com dia"
+      - "explica a causa em uma frase sem jargão"
+    ruins:
+      - "prazo vago ('umas semanas', 'em breve')"
+      - "sigla ou termo técnico sem explicar"
+  - id: responsabilidade
+    nome: "Assume sem culpar"
+    peso: 2
+    bons:
+      - "usa 'nós erramos a previsão' ou 'eu deveria ter avisado antes'"
+    ruins:
+      - "culpa o sistema ou o time da cliente"
+      - "minimiza ('nada demais')"
+  - id: plano
+    nome: "Plano e próximo contato"
+    peso: 2
+    bons:
+      - "diz o que já está sendo feito"
+      - "marca quando dará a próxima notícia ou oferece entrega parcial"
+    ruins:
+      - "termina sem plano nem próxima data"
+calibracao:
+  nota_3: "Então, assim, a gente teve uns desafios técnicos com o middleware do lado de vocês, aquela API de vocês é bem complicada, mas logo, logo sai, umas duas semaninhas no máximo."
+  nota_8: "Beatriz, vai atrasar: a nova data é dia 29. A integração com o estoque falhou nos testes e nós erramos a previsão. Já temos duas pessoas só nisso e te mando um status toda sexta. Se ajudar, no dia 20 consigo te mostrar o portal funcionando com pedidos de teste."
+dica_inicial: "Dê a notícia nas duas primeiras frases, com nova data exata, causa em linguagem simples e o plano."

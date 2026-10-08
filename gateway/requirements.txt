@@ -1,0 +1,12 @@
+fastapi>=0.110
+uvicorn>=0.29
+httpx>=0.27
+python-multipart>=0.0.9
+
+# Testes (só para desenvolvimento): pip install pytest
+
+# Opcionais (voz -> texto). Instale UM deles para habilitar /api/stt:
+# faster-whisper>=1.0
+# openai-whisper
+# Texto -> voz (/api/tts): binário piper + voz .onnx em ~/.local/share/piper
+# piper-tts
